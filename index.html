@@ -20,16 +20,41 @@ body{
 /* HEADER */
 .header{
   background:linear-gradient(135deg,#1976d2,#1565c0);
-  padding:14px;
+  padding:16px;
+
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+  grid-template-columns:repeat(2, minmax(0,1fr)); /* fix min-width grid */
+  gap:12px;
 }
+
+/* mobile 1 kolom */
+/* @media(max-width:600px){
+  .header{
+    grid-template-columns:1fr;
+  }
+} */
+
+.header input[type="datetime-local"]{
+  font-size:16px;      /* wajib supaya tidak zoom */
+  line-height:1.4;
+  height:44px;         /* paksa tinggi sama */
+  -webkit-appearance:none;
+}
+
+.header input[type="datetime-local"]::-webkit-date-and-time-value{
+  text-align:left;
+}
+
 .header input{
-  padding:8px;
+  width:100%;
+  min-width:0;              /* penting supaya tidak “nahan” lebar */
+  padding:10px 12px;
+
   border:none;
-  border-radius:8px;
-  font-size:12px;
+  border-radius:10px;
+
+  font-size:16px;           /* cegah zoom iOS */
+  background:rgba(255,255,255,0.95);
 }
 
 /* ADD BUTTON */
@@ -132,6 +157,7 @@ body{
   margin-bottom:12px;
   border:1px solid #ddd;
   border-radius:8px;
+    font-size:16px;
 }
 
 .form-nav{
@@ -405,8 +431,9 @@ function editCard(btn){
 
 function resetForm(){
   editIndex = null;
-  document.querySelectorAll("input").forEach(i => i.value = "");
-  document.querySelectorAll(".image-card").forEach(c => c.classList.remove("active"));
+  const form = document.getElementById("cardForm");
+  form.querySelectorAll("input").forEach(i => i.value = "");
+  form.querySelectorAll(".image-card").forEach(c => c.classList.remove("active"));
   goToStep(0);
 }
 
