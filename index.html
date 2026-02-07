@@ -107,16 +107,20 @@ body{
 /* FORM */
 .card-form{
   position:fixed;
-  bottom:0;
   left:0;
   right:0;
+  bottom:0;
+
   background:white;
   padding:18px;
   border-radius:20px 20px 0 0;
   box-shadow:0 -6px 20px rgba(0,0,0,0.2);
+
   display:none;
-  max-height:90vh;
-  overflow:auto;
+  max-height:70vh;
+  overflow-y:auto;
+
+  transition:transform .2s ease;
 }
 
 .step{display:none}
@@ -404,6 +408,30 @@ function resetForm(){
   document.querySelectorAll("input").forEach(i => i.value = "");
   document.querySelectorAll(".image-card").forEach(c => c.classList.remove("active"));
   goToStep(0);
+}
+
+/* ===== KEYBOARD AWARE BOTTOM SHEET ===== */
+
+const form = document.getElementById("cardForm");
+
+function adjustForKeyboard() {
+  if (!window.visualViewport) return;
+
+  const viewport = window.visualViewport;
+  const keyboardHeight = window.innerHeight - viewport.height - viewport.offsetTop;
+
+  if (keyboardHeight > 0) {
+    // keyboard muncul → angkat form
+    form.style.transform = `translateY(-${keyboardHeight}px)`;
+  } else {
+    // keyboard hilang → balikin
+    form.style.transform = "translateY(0)";
+  }
+}
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", adjustForKeyboard);
+  window.visualViewport.addEventListener("scroll", adjustForKeyboard);
 }
 
 document.addEventListener("error", function (e) {
