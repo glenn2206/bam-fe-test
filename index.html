@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Stack Flow App</title>
+
+<style>
+:root {
+  --primary: #2563eb;
+  --success: #16a34a;
+  --border: #e2e8f0;
+  --bg: #f8fafc;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+/* .app {
+  width: 100%;
+  max-width: 420px;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  overflow: hidden;
+} */
+
+.app {
+  width: 100%;
+  max-width: 420px;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* ===== Layer ===== */
+
+.layer {
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  transition: 0.3s ease;
+}
+
+.layer-header {
+  padding: 20px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.layer.shrink .layer-header {
+  padding: 12px 20px;
+  font-size: 13px;
+}
+
+.layer.disabled .layer-header {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* .layer-content {
+  display: none;
+  padding: 24px;
+}
+
+.layer.active {
+  flex: 1;
+}
+
+.layer.active .layer-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: flex-start;
+  overflow-y: auto;
+} */
+
+.layer-content {
+  display: none;
+  padding: 24px;
+  height: 100%;
+}
+
+.layer.active {
+  flex: 1;
+  min-height: 0; /* penting untuk flex scroll */
+}
+
+.layer.active .layer-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* smooth iOS */
+}
+
+
+/* ===== Form ===== */
+
+input {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+button {
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+button.success {
+  background: var(--success);
+}
+
+/* ===== Cards ===== */
+
+.card {
+  background: #f1f5f9;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.card h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.card p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+/* ===== Modal ===== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 350px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- Company -->
+<div class="layer shrink">
+  <div class="layer-header">Nama Perusahaan</div>
+</div>
+
+<!-- Menu -->
+<div class="layer active" id="layerMenu">
+  <div class="layer-header" onclick="openLayer('layerMenu')">
+    <span id="menuTitle">Pilih Menu</span>
+  </div>
+  <div class="layer-content">
+    <button onclick="selectMenu()">Menu A</button>
+  </div>
+</div>
+
+<!-- Data Diri -->
+<div class="layer disabled" id="layer1">
+  <div class="layer-header" onclick="openLayer('layer1')">
+    <span id="header1">Data Diri</span>
+  </div>
+  <div class="layer-content">
+    <input id="nama" placeholder="Nama Lengkap"/>
+    <input id="nohp" placeholder="No HP"/>
+    <button onclick="submitDataDiri()">Next</button>
+  </div>
+</div>
+
+<!-- Informasi Projek -->
+<div class="layer disabled" id="layer2">
+  <div class="layer-header" onclick="openLayer('layer2')">
+    <span id="header2">Informasi Projek</span>
+  </div>
+  <div class="layer-content">
+    <input id="namaProjek" placeholder="Nama Projek"/>
+    <input id="lokasiProjek" placeholder="Lokasi Projek"/>
+    <input id="namaPT" placeholder="Nama PT"/>
+    <input id="kontakPerson" placeholder="Kontak Person"/>
+    <button onclick="submitProjek()">Next</button>
+  </div>
+</div>
+
+<!-- Detail Pengujian -->
+<div class="layer disabled" id="layer3">
+  <div class="layer-header" onclick="openLayer('layer3')">
+    Detail Pengujian
+  </div>
+  <div class="layer-content">
+
+    <div id="cardList"></div>
+
+    <button onclick="openPopup()">➕ Tambah Pengujian</button>
+    <button class="success" onclick="finishForm()">Selesai</button>
+
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="layer disabled" id="layer4">
+  <div class="layer-header">Rangkuman</div>
+  <div class="layer-content" id="summaryContent"></div>
+</div>
+
+</div>
+
+<!-- Modal -->
+<div id="popupModal" class="modal">
+  <div class="modal-content">
+    <h3>Detail Pengujian</h3>
+    <input id="jenisUji" placeholder="Jenis Uji"/>
+    <input id="tanggalUji" type="date"/>
+    <input id="keteranganUji" placeholder="Keterangan"/>
+    <button onclick="savePengujian()">Simpan</button>
+    <button onclick="closePopup()" style="background:#ccc;color:#000;">Batal</button>
+  </div>
+</div>
+
+<script>
+
+function closeAll() {
+  document.querySelectorAll(".layer").forEach(l => l.classList.remove("active"));
+}
+
+function openLayer(id) {
+  const layer = document.getElementById(id);
+  if (layer.classList.contains("disabled")) return;
+  closeAll();
+  layer.classList.add("active");
+}
+
+function unlock(id) {
+  document.getElementById(id).classList.remove("disabled");
+}
+
+function selectMenu() {
+  menuTitle.innerText = "Menu A terpilih";
+  layerMenu.classList.add("shrink");
+  unlock("layer1");
+  openLayer("layer1");
+}
+
+function submitDataDiri() {
+  const namaVal = nama.value.trim();
+  const nohpVal = nohp.value.trim();
+  if (!namaVal || !nohpVal) return;
+
+  header1.innerText = `Data Diri - ${namaVal}`;
+  layer1.classList.add("shrink");
+  unlock("layer2");
+  openLayer("layer2");
+}
+
+function submitProjek() {
+  if (!namaProjek.value || !lokasiProjek.value || !namaPT.value || !kontakPerson.value) return;
+
+  header2.innerText = `Informasi Projek - ${namaProjek.value}`;
+  layer2.classList.add("shrink");
+  unlock("layer3");
+  openLayer("layer3");
+}
+
+/* ===== Multiple Cards ===== */
+
+let pengujianList = [];
+let editIndex = null;
+
+function openPopup(index=null){
+  editIndex=index;
+  popupModal.classList.add("active");
+
+  if(index!==null){
+    const data=pengujianList[index];
+    jenisUji.value=data.jenis;
+    tanggalUji.value=data.tanggal;
+    keteranganUji.value=data.ket;
+  } else {
+    jenisUji.value="";
+    tanggalUji.value="";
+    keteranganUji.value="";
+  }
+}
+
+function closePopup(){
+  popupModal.classList.remove("active");
+}
+
+function savePengujian(){
+  const jenis=jenisUji.value.trim();
+  const tanggal=tanggalUji.value;
+  const ket=keteranganUji.value.trim();
+  if(!jenis||!tanggal)return;
+
+  const data={jenis,tanggal,ket};
+
+  if(editIndex!==null){
+    pengujianList[editIndex]=data;
+  }else{
+    pengujianList.push(data);
+  }
+
+  editIndex = null; // reset
+  renderCards();
+  closePopup();
+}
+
+function renderCards(){
+  const cardListEl = document.getElementById("cardList");
+  cardListEl.innerHTML="";
+
+  pengujianList.forEach((item,i)=>{
+    cardListEl.innerHTML+=`
+      <div class="card">
+        <h4>Pengujian ${i+1}</h4>
+        <p><strong>Jenis:</strong> ${item.jenis}</p>
+        <p><strong>Tanggal:</strong> ${item.tanggal}</p>
+        <p><strong>Keterangan:</strong> ${item.ket}</p>
+        <button onclick="openPopup(${i})">✏️ Edit</button>
+        <button onclick="deletePengujian(${i})">🗑 Delete</button>
+      </div>
+    `;
+  });
+}
+
+function deletePengujian(index) {
+  pengujianList.splice(index, 1);
+  renderCards();
+}
+
+/* ===== Summary & Download ===== */
+
+function finishForm(){
+  if(pengujianList.length===0)return;
+
+  unlock("layer4");
+  openLayer("layer4");
+
+  let html=`
+    <p><strong>Nama:</strong> ${nama.value}</p>
+    <p><strong>No HP:</strong> ${nohp.value}</p>
+    <p><strong>Projek:</strong> ${namaProjek.value}</p>
+    <hr/>
+  `;
+
+  pengujianList.forEach((item,i)=>{
+    html+=`
+      <p><strong>Pengujian ${i+1}</strong></p>
+      <p>Jenis: ${item.jenis}</p>
+      <p>Tanggal: ${item.tanggal}</p>
+      <p>Keterangan: ${item.ket}</p>
+      <br/>
+    `;
+  });
+
+  html+=`<button onclick="downloadData()">Download</button>`;
+
+  summaryContent.innerHTML=html;
+}
+
+function downloadData(){
+  let text=`Nama: ${nama.value}
+No HP: ${nohp.value}
+Projek: ${namaProjek.value}
+
+`;
+
+  pengujianList.forEach((item,i)=>{
+    text+=`Pengujian ${i+1}
+Jenis: ${item.jenis}
+Tanggal: ${item.tanggal}
+Keterangan: ${item.ket}
+
+`;
+  });
+
+  const blob=new Blob([text],{type:"text/plain"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="rangkuman.txt";
+  a.click();
+}
+
+</script>
+
+</body>
+</html>
