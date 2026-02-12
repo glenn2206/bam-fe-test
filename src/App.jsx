@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 
-const API_BASE = 'https://bam-be.onrender.com';
+const API_BASE = 'http://localhost:5000';
 
 const TESTING_MASTER = {
   "pengujian_baja": {
@@ -204,6 +204,9 @@ const [loginPassword, setLoginPassword] = useState('');
 const [registerMode, setRegisterMode] = useState(false);
 const [registerName, setRegisterName] = useState('');
 const [errorMsg, setErrorMsg] = useState('');
+const [editingBookingId, setEditingBookingId] = useState(null);
+const [originalSlots, setOriginalSlots] = useState([]);  // slot milik booking yang di-edit
+const [originalDateKey, setOriginalDateKey] = useState(null);
 
 // Login / Register handler
 const handleAuth = async (e) => {
@@ -269,83 +272,24 @@ const isValidNext = () => {
     resetForm();
   };
 
-  const resetForm = () => {
-    setStep(0);
-    setSelectedMat(null);
-    setSelectedMerk('');
-    setUkuran('');
-    setMutu('');
-    setUji('');
-    setQty('');
-    setCustomMerk('');
-    setCustomUkuran('');
-    setCustomMutu('');
-    setSelectedSlots([]);
-    setDragStart(null);
-    setClickStart(null);
-    setIsDragging(false);
-  };
-
-const fetchSamples = async () => {
-  try {
-    // Ambil token dari localStorage (sesuai dengan kode login/register kamu)
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      console.warn('Token tidak ditemukan, user mungkin belum login');
-      // Opsional: redirect ke login atau tampilkan pesan
-      // window.location.href = '/login'; // atau set state untuk tampilkan popup login
-      return; // atau throw error kalau mau
-    }
-
-    const res = await fetch(`${API_BASE}/api/bookings`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json', // optional, tapi bagus ditambahkan
-      },
-    });
-
-    if (!res.ok) {
-      if (res.status === 401 || res.status === 403) {
-        // Token invalid atau expired → logout otomatis
-        localStorage.removeItem('token');
-        alert('Sesi login telah berakhir. Silakan login kembali.');
-        // window.location.href = '/'; // atau ke halaman login
-        return;
-      }
-      throw new Error(`Gagal fetch bookings: ${res.status} ${res.statusText}`);
-    }
-
-    const data = await res.json();
-
-    setSamples(data);
-
-    // Sinkronkan bookedSlotsByDate dari data backend
-    const newBooked = {};
-    data.forEach(booking => {
-      if (booking.date_key && booking.selected_slots) {
-        if (!newBooked[booking.date_key]) {
-          newBooked[booking.date_key] = [];
-        }
-        newBooked[booking.date_key] = [
-          ...newBooked[booking.date_key],
-          ...booking.selected_slots
-        ];
-      }
-    });
-
-    // Hilangkan duplikat per tanggal
-    Object.keys(newBooked).forEach(key => {
-      newBooked[key] = [...new Set(newBooked[key])];
-    });
-
-    setBookedSlotsByDate(newBooked);
-  } catch (err) {
-    console.error('Gagal ambil data booking:', err);
-    // Opsional: tampilkan notifikasi ke user
-    // alert('Gagal memuat daftar sampel. Pastikan Anda sudah login.');
-  }
+const resetForm = () => {
+  setStep(0);
+  setSelectedMat(null);
+  setSelectedMerk('');
+  setUkuran('');
+  setMutu('');
+  setUji('');
+  setQty('');
+  setCustomMerk('');
+  setCustomUkuran('');
+  setCustomMutu('');
+  setSelectedSlots([]);
+  setDragStart(null);
+  setClickStart(null);
+  setIsDragging(false);
+  setEditingBookingId(null);
+  setOriginalSlots([]);       // ← tambah
+  setOriginalDateKey(null);   // ← tambah
 };
 
 
@@ -413,12 +357,14 @@ useEffect(() => {
 
 // Saat user memilih tanggal di scheduler
 useEffect(() => {
-  if (selectedDate) {
-    const dateKey = selectedDate.toISOString().split('T')[0]; // '2025-04-15'
+  if (selectedDate && !isNaN(selectedDate.getTime())) {  // cek apakah Date valid
+    const dateKey = selectedDate.toISOString().split('T')[0];
     fetchBookedSlotsForDate(dateKey);
+  } else {
+    console.warn('selectedDate invalid atau null, skip fetch booked slots');
   }
 }, [selectedDate]);
-const saveSample = async() => {
+const saveSample = async () => {
   if (selectedSlots.length === 0) {
     alert("Pilih jadwal waktu terlebih dahulu");
     return;
@@ -427,13 +373,17 @@ const saveSample = async() => {
     alert("Pilih tanggal pengujian terlebih dahulu");
     return;
   }
+
   const token = localStorage.getItem('token');
+  if (!token) {
+    alert("Silakan login terlebih dahulu");
+    return;
+  }
 
-  const finalMerk = selectedMerk === 'Lainnya' ? customMerk : selectedMerk;
+  const finalMerk   = selectedMerk === 'Lainnya' ? customMerk : selectedMerk;
   const finalUkuran = selectedUkuran === 'Lainnya' ? customUkuran : selectedUkuran;
-  const finalMutu = selectedMutu === 'Lainnya' ? customMutu : selectedMutu;
+  const finalMutu   = selectedMutu === 'Lainnya' ? customMutu : selectedMutu;
 
-  // Format tanggal lebih bagus
   const formattedDate = selectedDate.toLocaleDateString('id-ID', {
     weekday: 'long',
     year: 'numeric',
@@ -441,38 +391,14 @@ const saveSample = async() => {
     day: 'numeric'
   });
 
-  // Format jam slot
   const formattedJadwal = selectedSlots
-    .sort((a, b) => a - b) // urutkan index slot
+    .sort((a, b) => a - b)
     .map(idx => getTimeFromIndex(idx))
     .join(', ');
 
-  const newSample = {
-    kategori: TESTING_MASTER[selectedCat]?.label || 'Tidak diketahui',
-    material: selectedMat?.label || 'Tidak diketahui',
-    merk: finalMerk || '-',
-    tipe: selectedTipe || '-',
-    ukuran: finalUkuran || '-',
-    mutu: finalMutu || '-',
-    tests: qtyByTest, // { "Tekan": 5, "Tekuk": 3, ... }
-    qtySample: Number(qtySample) || 0,
-    totalPengujian: Object.values(qtyByTest).reduce((sum, v) => sum + (Number(v) || 0), 0) + (Number(qtySample) || 0),
-    tanggal: formattedDate,
-    jadwal: formattedJadwal,
-    dateKey: selectedDate.toISOString().split('T')[0], // untuk tracking booked
-    createdAt: new Date().toLocaleString('id-ID')
-  };
+  const dateKey = selectedDate.toISOString().split('T')[0];
 
-  setSamples(prev => [...prev, newSample]);
-
-  // Update booked slots per tanggal
-  const dateKey = newSample.dateKey;
-  setBookedSlotsByDate(prev => ({
-    ...prev,
-    [dateKey]: [...(prev[dateKey] || []), ...selectedSlots]
-  }));
-
-const payload = {
+  const payload = {
     kategori: TESTING_MASTER[selectedCat]?.label || 'Tidak diketahui',
     material: selectedMat?.label || 'Tidak diketahui',
     merk: finalMerk || '-',
@@ -484,41 +410,54 @@ const payload = {
     total_pengujian: Object.values(qtyByTest).reduce((sum, v) => sum + (Number(v) || 0), 0) + (Number(qtySample) || 0),
     tanggal: formattedDate,
     jadwal: formattedJadwal,
-    date_key: selectedDate.toISOString().split('T')[0],
+    date_key: dateKey,
     selected_slots: selectedSlots
   };
 
   try {
-    const response = await fetch(`${API_BASE}/api/bookings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' ,'Authorization': `Bearer ${token}`,},
-      body: JSON.stringify(payload)
-    });
+    let response;
+    let result;
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Gagal menyimpan');
+    if (editingBookingId) {
+      // MODE EDIT → PUT / PATCH
+      response = await fetch(`${API_BASE}/api/bookings/${editingBookingId}`, {
+        method: 'PUT',           // atau 'PATCH' tergantung backend kamu
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      // MODE CREATE → POST
+      response = await fetch(`${API_BASE}/api/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload)
+      });
     }
 
-    // Ambil booking baru dari response (sudah include id dari Supabase)
-    const newBooking = result.booking;
+    result = await response.json();
 
-    // Tambahkan ke state dengan ID asli
-    setSamples(prev => [...prev, newBooking]);
+    if (!response.ok) {
+      throw new Error(result.error || `Gagal menyimpan (${response.status})`);
+    }
 
-    // Update booked slots (gunakan date_key dari payload atau newBooking)
-    const dateKey = payload.date_key;
-    setBookedSlotsByDate(prev => ({
-      ...prev,
-      [dateKey]: [...(prev[dateKey] || []), ...payload.selected_slots]
-    }));
+    alert(editingBookingId ? 'Booking berhasil diupdate!' : 'Booking berhasil disimpan!');
 
-    alert('Booking berhasil disimpan!');
+    // Reset form & mode edit
     closeForm();
     resetForm();
-    fetchSamples(); // tetap refresh full untuk konsistensi
+    setEditingBookingId(null);   // ← penting, kembali ke mode create
+
+    // Refresh data
+    fetchMySamples();   // atau fetchMySamples() tergantung fungsi kamu
+
   } catch (err) {
+    console.error(err);
     alert('Error: ' + err.message);
   }
 };
@@ -553,14 +492,30 @@ useEffect(() => {
   // Reset slot pilihan saat tanggal berubah
   setSelectedSlots([]);
 }, [selectedDate]);
-const isUnavailable = (index) => {
-  if (!selectedDate) return true; // kalau tanggal belum dipilih, semua slot unavailable
 
-  const dateKey = selectedDate.toISOString().split('T')[0];
-  const bookedForThisDate = bookedSlotsByDate[dateKey] || [];
+  const isUnavailable = (index) => {
+    if (!selectedDate) return true;
 
-  return blockedSlots.includes(index) || bookedForThisDate.includes(index);
-};
+    if (!(selectedDate instanceof Date) || isNaN(selectedDate.getTime())) {
+      console.warn("selectedDate invalid:", selectedDate);
+      return true;
+    }
+
+    const dateKey = selectedDate.toISOString().split('T')[0];
+    const bookedForThisDate = bookedSlotsByDate[dateKey] || [];
+
+    // Jika sedang edit DAN tanggal masih sama dengan tanggal asli booking
+    if (editingBookingId && originalDateKey === dateKey) {
+      // Slot milik booking ini sendiri boleh dipilih (kecuali blocked)
+      const isOwnSlot = originalSlots.includes(index);
+      const isOtherBooked = bookedForThisDate.includes(index) && !isOwnSlot;
+
+      return blockedSlots.includes(index) || isOtherBooked;
+    }
+
+    // Mode normal (bukan edit) atau tanggal beda → semua booked dianggap unavailable
+    return blockedSlots.includes(index) || bookedForThisDate.includes(index);
+  };
 
   const startDrag = (index) => {
     if (isUnavailable(index)) return;
@@ -650,6 +605,9 @@ const isUnavailable = (index) => {
   setSelectedMutu(sample.mutu);
   setQtyByTest(sample.tests || {});
   setQtySample(sample.qty_sample || 0);
+  setEditingBookingId(sample.id);
+  setOriginalSlots(sample.selected_slots || []);
+  setOriginalDateKey(sample.date_key || null);
 
   // Parse tanggal kembali ke Date object
   const [weekday, dayMonthYear] = sample.tanggal.split(', ');
@@ -709,7 +667,7 @@ const handleDelete = async (id) => {
     }
 
     alert('Booking berhasil dihapus');
-    fetchSamples(); // refresh daftar sampel & booked slots
+    fetchMySamples(); // refresh daftar sampel & booked slots
   } catch (err) {
     console.error('Error menghapus booking:', err);
     alert('Error menghapus: ' + (err.message || 'Terjadi kesalahan pada server'));
