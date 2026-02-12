@@ -1,0 +1,445 @@
+
+    :root {
+      --primary: #1976d2;
+      --primary-dark: #1565c0;
+      --secondary: #2e7d32;
+      --warning: #fb8c00;
+      --danger: #e53935;
+      --bg-body: #eef2f7;
+      --shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-body);
+      padding-bottom: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Layout & Header */
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .header input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .add-btn {
+      width: 100%;
+      max-width: 800px;
+      padding: 18px;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 20px;
+    }
+
+    /* Main Container */
+    .container {
+      width: 100%;
+      max-width: 800px;
+      padding: 15px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 15px;
+    }
+
+    .sample-card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: var(--shadow);
+      border-left: 6px solid var(--primary);
+    }
+
+    .sample-card h4 {
+      margin: 0 0 8px;
+      color: var(--primary-dark);
+      font-size: 14px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+
+    /* Form / Bottom Sheet */
+    .card-form {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 800px;
+      background: white;
+      padding: 20px;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+      z-index: 1000;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .card-form.open {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      z-index: 900;
+      backdrop-filter: blur(2px);
+    }
+
+    /* Grid Selection */
+    .grid-label {
+      display: block;
+      margin: 15px 0 10px;
+      font-weight: 700;
+      font-size: 15px;
+      color: #2c3e50;
+      border-left: 4px solid var(--primary);
+      padding-left: 10px;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .image-card {
+      border: 1.5px solid #ddd;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      font-size: 10px;
+      cursor: pointer;
+      background: #fff;
+      transition: 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-card img {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+
+    .image-card.active {
+      border: 2.5px solid var(--primary);
+      background: #e3f2fd;
+      font-weight: bold;
+      color: var(--primary-dark);
+    }
+
+    /* ====== PERUBAHAN HANYA DI SINI (MATERIAL FULL BOX) ====== */
+    #render-material .image-card {
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      height: 140px;
+    }
+
+    #render-material .image-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      margin: 0;
+      border-radius: 12px;
+    }
+
+    #render-material .image-card span {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.55);
+      color: white;
+      font-size: 12px;
+      padding: 6px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* ====== END PERUBAHAN ====== */
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .form-nav {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .form-nav button {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+
+    .scheduler {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    }
+
+      .scheduler button {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid #ddd;
+      user-select: none;
+    }
+
+    .time-label {
+      padding: 8px;
+      font-size: 12px;
+      border-right: 1px solid #eee;
+      background: #fafafa;
+    }
+
+    .slot {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+      height: 40px;
+      border-left: 1px solid #eee;
+      border-top: 1px solid #eee;
+      cursor: pointer;
+    }
+
+    .slot:hover {
+      background: #e3f2fd;
+    }
+
+    .slot.selected {
+      background: #1976d2;
+    }
+
+    .slot.booked {
+      background: #2e7d32;
+      cursor: not-allowed;
+    }
+
+    .slot.blocked {
+      background: #e53935;
+      cursor: not-allowed;
+    }
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin: 0 0 20px 0;
+  padding-left: 12px;
+  border-left: 5px solid var(--primary);
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+/* Tombol Polos / Sirip (mirip image-card active) */
+.type-options {
+  display: flex;
+  gap: 12px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 14px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 10px;
+  background: white;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.type-btn:hover {
+  border-color: var(--primary);
+  background: #f0f7ff;
+}
+
+.type-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary-dark);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+/* Input & Select step 3 (mirip input header) */
+.detail-input,
+.detail-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+}
+
+.detail-input:focus,
+.detail-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+}
+
+/* Mutu beton fc/K/fs */
+.mutu-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.mutu-field label {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+/* Jumlah Pengujian row (mirip sample-card feel) */
+.test-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 10px;
+}
+
+.test-name {
+  flex: 1;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.test-qty {
+  width: 110px;
+  text-align: center;
+}
+
+.test-unit {
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* Tombol navigasi step 3 (sama seperti form-nav lain) */
+.form-nav.step3 {
+  margin-top: 32px;
+}
+
+.form-nav.step3 button {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.form-nav.step3 .btn-back {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.form-nav.step3 .btn-back:hover {
+  background: #cbd5e1;
+}
+
+.form-nav.step3 .btn-next {
+  background: var(--primary);
+  color: white;
+  margin-left: 12px;
+}
+
+.form-nav.step3 .btn-next:hover {
+  background: var(--primary-dark);
+}
+
+.form-nav.step3 .btn-next:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.slot.booked {
+  background: #2e7d32 !important;   /* hijau secondary seperti add-btn */
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.slot.booked:hover {
+  background: #2e7d32 !important;
+}
