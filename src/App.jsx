@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 
-const API_BASE = 'http://localhost:5000';
+// const API_BASE = 'http://localhost:5000';
+const API_BASE = 'https://bam-be.onrender.com';
 
 const TESTING_MASTER = {
   "pengujian_baja": {
@@ -810,19 +811,28 @@ const handleDelete = async (id) => {
   </div>
 )}
       {/* Header */}
-      <div className="header">
+      <div className="header" style={{ maxWidth: 'min(90vw, 800px)', margin: '0 auto' }}>
         <input placeholder="Nama Proyek" />
         <input placeholder="Nama Perusahaan" />
         <input placeholder="Lokasi Proyek" />
         <input placeholder="Kontak Person" />
       </div>
 
-      <button className="add-btn" onClick={openForm}>
-        + TAMBAH SAMPEL PENGUJIAN
-      </button>
+<button 
+  className="add-btn" 
+  style={{ 
+    display: 'block', 
+    width: '100%', 
+    maxWidth: 'min(90vw, 800px)', 
+    margin: '0 auto 20px' 
+  }} 
+  onClick={openForm}
+>
+  + TAMBAH SAMPEL PENGUJIAN
+</button>
 
 {/* Daftar sampel */}
-<div className="container">
+<div className="container" style={{ maxWidth: 'min(90vw, 800px)', margin: '0 auto' }}>
 {samples.length === 0 ? (
   <p style={{ textAlign: 'center', color: '#64748b', fontStyle: 'italic' }}>
     Belum ada sampel pengujian yang disimpan.
@@ -1346,36 +1356,60 @@ const handleDelete = async (id) => {
     </div>
 
     {/* Scheduler slot waktu */}
-    <div className="scheduler" ref={schedulerRef}>
+    <div className="scheduler" ref={schedulerRef} style={{ maxWidth: 'min(90vw, 900px)', margin: '24px auto' }}>
       <div 
         className="grid"
         onMouseLeave={endDrag}
         onMouseUp={endDrag}
       >
-        {Array.from({ length: totalSlots }).map((_, i) => {
-          const time = getTimeFromIndex(i);
-          const isBlocked = blockedSlots.includes(i);
-          const isBooked = isUnavailable(i) && !isBlocked; // booked = unavailable tapi bukan blocked
-          const isSelected = selectedSlots.includes(i);
+{Array.from({ length: totalSlots }).map((_, i) => {
+  const time = getTimeFromIndex(i);
+  const isBlocked = blockedSlots.includes(i);
 
-          let className = "slot";
-          if (isBlocked) className += " blocked";
-          else if (isBooked) className += " booked"; // class baru untuk booked
-          else if (isSelected) className += " selected";
+  // Gunakan isUnavailable untuk cek unavailable umum
+  const unavailable = isUnavailable(i);
 
-          return (
-            <div
-              key={i}
-              className={className}
-              title={isBooked ? "Slot ini sudah dibooking" : ""}
-              onMouseDown={() => startDrag(i)}
-              onMouseOver={() => dragOver(i)}
-              onClick={() => handleClick(i)}
-            >
-              {time}
-            </div>
-          );
-        })}
+  // Cek apakah ini slot milik sendiri (khusus edit)
+const isOwnSlot = editingBookingId &&
+                  selectedDate && 
+                  !isNaN(selectedDate.getTime()) &&                  // ← tambah ini (pastikan valid Date)
+                  originalDateKey === selectedDate.toISOString().split('T')[0] &&
+                  originalSlots.includes(i);
+
+  // Tentukan class utama
+  let className = "slot";
+
+  if (isBlocked) {
+    className += " blocked";
+  } else if (isOwnSlot) {
+    if(selectedSlots.includes(i)) {
+      className += " selected";    
+    } else {
+      className += " own-booked";           // hijau untuk milik sendiri
+    }
+  } else if (unavailable) {
+    className += " booked";               // merah untuk booked orang lain
+  } else if (selectedSlots.includes(i)) {
+    className += " selected";             // biru untuk yang dipilih
+  }
+
+  return (
+    <div
+      key={i}
+      className={className}
+      title={
+        isBlocked ? "Slot diblokir (libur/maintenance)" :
+        isOwnSlot ? "Slot ini milik booking Anda saat ini" :
+        unavailable ? "Slot sudah dibooking orang lain" : ""
+      }
+      onMouseDown={() => startDrag(i)}
+      onMouseOver={() => dragOver(i)}
+      onClick={() => handleClick(i)}
+    >
+      {time}
+    </div>
+  );
+})}
       </div>
     </div>
 
