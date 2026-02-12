@@ -643,8 +643,7 @@ const handleDelete = async (id) => {
       alert('Anda harus login terlebih dahulu untuk menghapus booking.');
       return;
     }
-
-    const res = await fetch(`http://localhost:5000/api/bookings/${id}`, {
+    const res = await fetch(`${API_BASE}/api/bookings/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
