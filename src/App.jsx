@@ -3,8 +3,23 @@ import './App.css';
 
 // const API_BASE = 'http://localhost:5000';
 const API_BASE = 'https://bam-be.onrender.com';
-
-const TESTING_MASTER = {
+const BETON_PLANT_BRANDS = [
+  "Adhimix",
+  "Merak Jaya Beton",
+  "Bangun Rancang Indonesia Kita (Brik)",
+  "Pionirbeton",
+  "Farika Beton",
+  "Scg Fresh Beton",
+  "Sika",
+  "Karya Beton",
+  "Sudhira Solusi Bangun Beton",
+  "Kbn Prima Beton",
+  "Wika Beton",
+  "Jayamix",
+  "Holcim Beton",
+  "Merah Putih Beton",
+  "Lainnya"
+];const TESTING_MASTER = {
   "pengujian_baja": {
     "label": "PENGUJIAN BAJA",
     "booked_slots": [],
@@ -20,7 +35,7 @@ const TESTING_MASTER = {
         },
         "ukuran_type": "diameter (mm)",
         "mutu": ["BjTP 280", "BjTS 280", "BjTS 420B", "BjTS 520"],
-        "tests": ["Tekan", "Tekuk"]
+        "tests": ["Tarik", "Tekuk"]
       },
       {
         "id": "wiremesh",
@@ -30,7 +45,7 @@ const TESTING_MASTER = {
         "ukuran": ["4", "5", "6", "7", "8", "9", "10", "11", "12"],
         "ukuran_type": "diameter kawat (mm)",
         "mutu": ["SNI 07-0663-1995"],
-        "tests": ["Tekan", "Geser", "Tekuk"]
+        "tests": ["Tarik", "Geser", "Tekuk"]
       },
       {
         "id": "anchor",
@@ -40,7 +55,7 @@ const TESTING_MASTER = {
         "ukuran": ["6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26", "27", "Lainnya"],
         "ukuran_type": "diameter (mm)",
         "mutu": ["ST 41", "ST 61", "Lainnya"],
-        "tests": ["Tekan", "Tekuk"]
+        "tests": ["Tarik", "Tekuk"]
       },
       {
         "id": "plate",
@@ -50,7 +65,7 @@ const TESTING_MASTER = {
         "ukuran": ["T < 5mm", "T > 5mm"],
         "ukuran_type": "tebal / thickness (mm)",
         "mutu": ["BJ P34", "BJ P41", "BJ P50", "SS 400", "Lainnya"],
-        "tests": ["Tekan", "Tekuk"]
+        "tests": ["Tarik", "Tekuk"]
       },
       {
         "id": "bolt",
@@ -68,7 +83,7 @@ const TESTING_MASTER = {
         "brands": ["Master Steel", "Lautan Steel", "Interworld Steel", "Deli", "Delco Prima", "Baja Perkasa Sentosa", "Citra Baru Steel", "Krakatau Steel", "Krakatau Osaka Steel", "Asia Steel", "KSTY", "Lainnya"],
         "ukuran": ["6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26", "27", "Lainnya"],
         "ukuran_type": "diameter (mm)",
-        "tests": ["Tekan", "Tekuk"]
+        "tests": ["Tarik", "Tekuk"]
       },
       {
         "id": "pc_strand",
@@ -77,7 +92,7 @@ const TESTING_MASTER = {
         "brands": ["Master Steel", "Lautan Steel", "Interworld Steel", "Deli", "Delco Prima", "Krakatau Steel", "Krakatau Osaka Steel", "Asia Steel", "Lainnya"],
         "ukuran": ["6.4", "7.9", "9.5", "11.1", "12.7", "15.2", "15.7", "17.8", "Lainnya"],
         "ukuran_type": "diameter (mm)",
-        "tests": ["Tekan", "Tekuk"]
+        "tests": ["Tarik", "Tekuk"]
       },
       {
         "id": "coupler",
@@ -87,7 +102,7 @@ const TESTING_MASTER = {
         "ukuran_type": "diameter ulir (mm)",
         "ukuran": ["6", "8", "10", "13", "16", "19", "22", "25", "29", "32", "36", "40"],
         "mutu": ["BjTS 280", "BjTS 420B", "BjTS 520"],
-        "tests": ["Tekan"]
+        "tests": ["Tarik"]
       },
       {
         "id": "welding_joint",
@@ -97,7 +112,7 @@ const TESTING_MASTER = {
         "ukuran_type": "diameter ulir (mm)",
         "ukuran": ["6", "8", "10", "13", "16", "19", "22", "25", "29", "32", "36", "40"],
         "mutu": ["BjTS 280", "BjTS 420B", "BjTS 520"],
-        "tests": ["Tekan"]
+        "tests": ["Tarik"]
       }
     ]
   },
@@ -108,60 +123,60 @@ const TESTING_MASTER = {
         "id": "cylinder",
         "label": "Cylinder",
         "img": "./assets/CYLINDER.jpg",
-        "brands": ["Semen Gresik", "Semen Tiga Roda", "Semen Holcim", "Semen Padang", "Semen Thang Long", "Semen Conch", "Lainnya"],
+        "brands": BETON_PLANT_BRANDS,
         "ukuran_type": "Diameter × Tinggi (cm)",
         "ukuran": ["10 × 20", "15 × 30", "Lainnya"],
         "mutu_type": ["fc", "K"],
-        "tests": ["TEKAN"]
+        "tests": []
       },
       {
         "id": "cube_grouting",
         "label": "Cube / Grouting",
         "img": "./assets/CUBE.jpg",
-        "brands": ["Semen Gresik", "Semen Tiga Roda", "Semen Holcim", "Semen Padang", "Semen Thang Long", "Semen Conch", "Lainnya"],
+        "brands": BETON_PLANT_BRANDS,
         "ukuran_type": "Panjang × Lebar × Tinggi (cm)",
         "ukuran": ["5 × 5 × 5", "10 × 10 × 10", "15 × 15 × 15", "Lainnya"],
         "mutu_type": ["fc", "K"],
-        "tests": ["TEKAN"]
+        "tests": []
       },
       {
         "id": "beam",
         "label": "Beam",
         "img": "./assets/BEAM.jpg",
-        "brands": ["Semen Gresik", "Semen Tiga Roda", "Semen Holcim", "Semen Padang", "Semen Thang Long", "Semen Conch", "Lainnya"],
+        "brands": BETON_PLANT_BRANDS,
         "ukuran_type": "Panjang × Lebar × Tinggi (cm)",
         "ukuran": ["15 × 15 × 60"],
         "mutu_type": ["fs"],
-        "tests": ["TEKAN"]
+        "tests": []
       },
       {
         "id": "paving_block",
         "label": "Paving Block",
         "img": "./assets/PAVING_BLOCK.jpg",
-        "brands": ["Semen Gresik", "Semen Padang", "Semen Thang Long", "Semen Conch", "Lainnya"],
+        "brands": BETON_PLANT_BRANDS,
         "ukuran_type": "Panjang × Lebar × Tinggi (mm/cm) - Manual",
         "ukuran": ["manual"],
         "mutu_type": ["fc", "K"],
-        "tests": ["TEKAN"]
+        "tests": []
       },
       {
         "id": "coring",
         "label": "Coring Sample",
         "img": "./assets/CORING_SAMPLE.jpg",
-        "brands": ["Semen Gresik", "Semen Tiga Roda", "Semen Holcim", "Semen Padang", "Semen Thang Long", "Semen Conch", "Lainnya"],
+        "brands": BETON_PLANT_BRANDS,
         "ukuran_type": "Diameter × Tinggi (cm) - Manual",
         "ukuran": ["manual"],
         "mutu_type": ["fc", "K"],
-        "tests": ["TEKAN"]
+        "tests": []
       },
       {
         "id": "aac_beton_ringan",
         "label": "Autoclaved Aerated Concrete / Beton Ringan Aerasi",
         "img": "./assets/AUTOCLAVED.jpg",
-        "brands": ["Semen Gresik", "Semen Tiga Roda", "Semen Holcim", "Semen Padang", "Semen Thang Long", "Semen Conch", "Lainnya"],
+        "brands": BETON_PLANT_BRANDS,
         "ukuran_type": "Dimensi Blok (Manual)",
         "mutu_type": ["fc", "K"],
-        "tests": ["TEKAN"]
+        "tests": []
       }
     ]
   }
@@ -261,7 +276,7 @@ const updateQty = (test, value) => {
 // Validasi tombol next
 const isValidNext = () => {
   // Harus ada minimal 1 qty > 0 atau sample > 0
-  const totalQty = Object.values(qtyByTest).reduce((sum, v) => sum + (Number(v) || 0), 0);
+  const totalQty =Object.values(qtyByTest).reduce((sum, v) => sum + (Number(v) || 0), 0)+ (Number(qtySample) || 0);
   return totalQty > 0 || Number(qtySample) > 0;
 };
 
@@ -271,6 +286,13 @@ const isValidNext = () => {
   const closeForm = () => {
     setIsFormOpen(false);
     resetForm();
+  };
+
+  const getTotalQty = () => {
+    return (
+      Object.values(qtyByTest).reduce((sum, v) => sum + (Number(v) || 0), 0)
+      + (Number(qtySample) || 0)
+    );
   };
 
 const resetForm = () => {
@@ -381,6 +403,34 @@ const saveSample = async () => {
     return;
   }
 
+  // const totalQty = getTotalQty();
+
+  // if (selectedSlots.length !== totalQty) {
+  //   alert(`Jumlah slot harus sama dengan total pengujian (${totalQty})`);
+  //   return;
+  // }
+
+
+
+      const required = getRequiredSlots();
+
+      if (selectedSlots.length !== required) {
+        // Tidak pakai alert setiap kali, biar tidak mengganggu
+        // alert hanya jika user selesai memilih tapi salah jumlah
+        // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
+        // Tapi kalau mau ketat:
+        if (selectedSlots.length > required) {
+          alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
+          setClickStart(null);
+          return;
+        }
+        // Jika kurang, biarkan saja (user mungkin mau lanjut drag)
+      }
+
+
+
+
+
   const finalMerk   = selectedMerk === 'Lainnya' ? customMerk : selectedMerk;
   const finalUkuran = selectedUkuran === 'Lainnya' ? customUkuran : selectedUkuran;
   const finalMutu   = selectedMutu === 'Lainnya' ? customMutu : selectedMutu;
@@ -463,6 +513,18 @@ const saveSample = async () => {
   }
 };
 
+const getMaxSamplesPerSlot = () => {
+  if (selectedCat === 'pengujian_baja') return 5;
+  if (selectedCat === 'pengujian_beton') return 15;
+  return 5; // default safety
+};
+
+const getRequiredSlots = () => {
+  const total = getTotalQty();
+  if (total === 0) return 0;
+  return Math.ceil(total / getMaxSamplesPerSlot());
+};
+
 const handleLogout = () => {
   localStorage.removeItem('token');
   setIsLoggedIn(false);
@@ -535,13 +597,29 @@ useEffect(() => {
 
     for (let i = min; i <= max; i++) {
       if (isUnavailable(i)) {
-        setSelectedSlots([]); // batal jika ada blocked di tengah
+        setSelectedSlots([]);
         return;
       }
       range.push(i);
     }
 
+    const required = getRequiredSlots();
+
+    if (range.length !== required) {
+      // Tidak pakai alert setiap kali, biar tidak mengganggu
+      // alert hanya jika user selesai memilih tapi salah jumlah
+      // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
+      // Tapi kalau mau ketat:
+      if (range.length > required) {
+        alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
+        setClickStart(null);
+        return;
+      }
+      // Jika kurang, biarkan saja (user mungkin mau lanjut drag)
+    }
+
     setSelectedSlots(range);
+    setClickStart(null);
   };
 
   const endDrag = () => {
@@ -569,6 +647,21 @@ useEffect(() => {
           return;
         }
         range.push(i);
+      }
+
+      const required = getRequiredSlots();
+
+      if (range.length !== required) {
+        // Tidak pakai alert setiap kali, biar tidak mengganggu
+        // alert hanya jika user selesai memilih tapi salah jumlah
+        // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
+        // Tapi kalau mau ketat:
+        if (range.length > required) {
+          alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
+          setClickStart(null);
+          return;
+        }
+        // Jika kurang, biarkan saja (user mungkin mau lanjut drag)
       }
 
       setSelectedSlots(range);
@@ -988,7 +1081,9 @@ const handleDelete = async (id) => {
           <>
             {/* ... form merk, ukuran, mutu, qty sama seperti sebelumnya ... */}
             {/* contoh singkat */}
-            <span className="grid-label">3. Pilih Merek</span>
+            <span className="grid-label">
+              3. Pilih {selectedCat === 'pengujian_beton' ? 'Plant' : 'Merek'}
+            </span>
             <div className="image-grid">
               {selectedMat.brands.map(b => (
                 b === 'Lainnya' ? (
@@ -1350,12 +1445,35 @@ const handleDelete = async (id) => {
         })}
       </div>
       <p style={{ fontSize: '13px', color: '#e53935', marginTop: '12px', textAlign: 'center' }}>
-        * Hari Sabtu/Minggu & tanggal merah: harga otomatis x2 (sampai pukul 14.00), x3 setelahnya
+        * Untuk jadwal berwarna merah muda, harga menjadi x3.
+        Pengujian besi: 1 jadwal maksimal 5 kali tarik/tekuk. Jika lebih, silakan klik Tambahan Jadwal.
+        Contoh: 10 tarik dan 5 tekuk = 3 shift yang harus dipilih saat booking.
       </p>
     </div>
 
     {/* Scheduler slot waktu */}
     <div className="scheduler" ref={schedulerRef} style={{ maxWidth: 'min(90vw, 900px)', margin: '24px auto' }}>
+      <div style={{ 
+        fontSize: '13px', 
+        color: selectedSlots.length !== getRequiredSlots() ? '#e53935' : '#2e7d32',
+        margin: '12px 0',
+        textAlign: 'center',
+        padding: '10px',
+        background: selectedSlots.length !== getRequiredSlots() ? '#ffebee' : '#e8f5e9',
+        borderRadius: '8px'
+      }}>
+        {selectedCat === 'pengujian_baja' ? (
+          <>1 slot = maks. <strong>5 pengujian baja</strong></>
+        ) : (
+          <>1 slot = maks. <strong>15 pengujian beton</strong></>
+        )}
+        <br />
+        Total pengujian: <strong>{getTotalQty()}</strong>  
+        → Anda <strong>harus memilih tepat {getRequiredSlots()} slot</strong>
+        {selectedSlots.length > 0 && (
+          <> • Saat ini: {selectedSlots.length} slot</>
+        )}
+      </div>
       <div 
         className="grid"
         onMouseLeave={endDrag}
@@ -1416,14 +1534,23 @@ const isOwnSlot = editingBookingId &&
       <button className="btn-back" onClick={() => setStep(3)}>
         Kembali
       </button>
-      <button
-        className="btn-next"
-        onClick={saveSample}
-        disabled={selectedSlots.length === 0 || !selectedDate}
-        style={{ background: selectedSlots.length > 0 && selectedDate ? 'var(--secondary)' : '#94a3b8' }}
-      >
-        Simpan Sampel
-      </button>
+    <button
+      className="btn-next"
+      onClick={saveSample}
+      disabled={
+        !selectedDate ||
+        selectedSlots.length === 0 ||
+        selectedSlots.length !== getRequiredSlots()   // ← harus sama dengan jumlah slot yang dibutuhkan
+      }
+      style={{
+        background:
+          selectedSlots.length === getRequiredSlots() && selectedDate
+            ? 'var(--secondary)'
+            : '#94a3b8'
+      }}
+    >
+      Simpan Sampel
+    </button>
     </div>
   </>
 )}
