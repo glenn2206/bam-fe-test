@@ -580,94 +580,119 @@ useEffect(() => {
     return blockedSlots.includes(index) || bookedForThisDate.includes(index);
   };
 
-  const startDrag = (index) => {
-    if (isUnavailable(index)) return;
-    setIsDragging(true);
-    setDragStart(index);
-    setSelectedSlots([index]);
-  };
+  // const startDrag = (index) => {
+  //   if (isUnavailable(index)) return;
+  //   setIsDragging(true);
+  //   setDragStart(index);
+  //   setSelectedSlots([index]);
+  // };
 
-  const dragOver = (index) => {
-    if (!isDragging || dragStart === null) return;
-    if (isUnavailable(index)) return;
+  // const dragOver = (index) => {
+  //   if (!isDragging || dragStart === null) return;
+  //   if (isUnavailable(index)) return;
 
-    const min = Math.min(dragStart, index);
-    const max = Math.max(dragStart, index);
-    const range = [];
+  //   const min = Math.min(dragStart, index);
+  //   const max = Math.max(dragStart, index);
+  //   const range = [];
 
-    for (let i = min; i <= max; i++) {
-      if (isUnavailable(i)) {
-        setSelectedSlots([]);
-        return;
-      }
-      range.push(i);
-    }
+  //   for (let i = min; i <= max; i++) {
+  //     if (isUnavailable(i)) {
+  //       setSelectedSlots([]);
+  //       return;
+  //     }
+  //     range.push(i);
+  //   }
 
-    const required = getRequiredSlots();
+  //   const required = getRequiredSlots();
 
-    if (range.length !== required) {
-      // Tidak pakai alert setiap kali, biar tidak mengganggu
-      // alert hanya jika user selesai memilih tapi salah jumlah
-      // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
-      // Tapi kalau mau ketat:
-      if (range.length > required) {
-        alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
-        setClickStart(null);
-        return;
-      }
-      // Jika kurang, biarkan saja (user mungkin mau lanjut drag)
-    }
+  //   if (range.length !== required) {
+  //     // Tidak pakai alert setiap kali, biar tidak mengganggu
+  //     // alert hanya jika user selesai memilih tapi salah jumlah
+  //     // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
+  //     // Tapi kalau mau ketat:
+  //     if (range.length > required) {
+  //       alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
+  //       setClickStart(null);
+  //       return;
+  //     }
+  //     // Jika kurang, biarkan saja (user mungkin mau lanjut drag)
+  //   }
 
-    setSelectedSlots(range);
-    setClickStart(null);
-  };
+  //   setSelectedSlots(range);
+  //   setClickStart(null);
+  // };
 
-  const endDrag = () => {
-    setIsDragging(false);
-    setDragStart(null);
-  };
+  // const endDrag = () => {
+  //   setIsDragging(false);
+  //   setDragStart(null);
+  // };
+
+  // const handleClick = (index) => {
+  //   if (isUnavailable(index)) return;
+
+  //   if (clickStart === null) {
+  //     // klik pertama
+  //     setClickStart(index);
+  //     setSelectedSlots([index]);
+  //   } else {
+  //     // klik kedua
+  //     const min = Math.min(clickStart, index);
+  //     const max = Math.max(clickStart, index);
+  //     const range = [];
+
+  //     for (let i = min; i <= max; i++) {
+  //       if (isUnavailable(i)) {
+  //         setSelectedSlots([]); // batal
+  //         setClickStart(null);
+  //         return;
+  //       }
+  //       range.push(i);
+  //     }
+
+  //     const required = getRequiredSlots();
+
+  //     if (range.length !== required) {
+  //       // Tidak pakai alert setiap kali, biar tidak mengganggu
+  //       // alert hanya jika user selesai memilih tapi salah jumlah
+  //       // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
+  //       // Tapi kalau mau ketat:
+  //       if (range.length > required) {
+  //         alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
+  //         setClickStart(null);
+  //         return;
+  //       }
+  //     }
+
+  //     setSelectedSlots(range);
+  //     setClickStart(null);
+  //   }
+  // };
 
   const handleClick = (index) => {
-    if (isUnavailable(index)) return;
+  if (isUnavailable(index)) return;
 
-    if (clickStart === null) {
-      // klik pertama
-      setClickStart(index);
-      setSelectedSlots([index]);
-    } else {
-      // klik kedua
-      const min = Math.min(clickStart, index);
-      const max = Math.max(clickStart, index);
-      const range = [];
-
-      for (let i = min; i <= max; i++) {
-        if (isUnavailable(i)) {
-          setSelectedSlots([]); // batal
-          setClickStart(null);
-          return;
-        }
-        range.push(i);
-      }
-
-      const required = getRequiredSlots();
-
-      if (range.length !== required) {
-        // Tidak pakai alert setiap kali, biar tidak mengganggu
-        // alert hanya jika user selesai memilih tapi salah jumlah
-        // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
-        // Tapi kalau mau ketat:
-        if (range.length > required) {
-          alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
-          setClickStart(null);
-          return;
-        }
-        // Jika kurang, biarkan saja (user mungkin mau lanjut drag)
-      }
-
-      setSelectedSlots(range);
-      setClickStart(null);
+  setSelectedSlots((prevSlots) => {
+    // Jika sudah ada di selected → hapus (toggle off)
+    if (prevSlots.includes(index)) {
+      return prevSlots.filter((slot) => slot !== index);
     }
-  };
+
+    // Jika belum ada → tambahkan (push)
+    const newSlots = [...prevSlots, index].sort((a, b) => a - b);
+
+    // Opsional: batasi agar tidak melebihi required (bisa dihapus kalau mau tombol simpan saja yang menolak)
+    const required = getRequiredSlots();
+    if (newSlots.length > required) {
+      alert(`Maksimal ${required} slot untuk ${getTotalQty()} pengujian`);
+      return prevSlots; // tolak penambahan
+    }
+
+    return newSlots;
+  });
+
+  // Reset clickStart karena sudah tidak pakai mode range klik lagi
+  setClickStart(null);
+};
 
   const selectCategory = (key) => {
     setSelectedCat(key);
@@ -1444,11 +1469,11 @@ const handleDelete = async (id) => {
           );
         })}
       </div>
-      <p style={{ fontSize: '13px', color: '#e53935', marginTop: '12px', textAlign: 'center' }}>
+      {/* <p style={{ fontSize: '13px', color: '#e53935', marginTop: '12px', textAlign: 'center' }}>
         * Untuk jadwal berwarna merah muda, harga menjadi x3.
         Pengujian besi: 1 jadwal maksimal 5 kali tarik/tekuk. Jika lebih, silakan klik Tambahan Jadwal.
         Contoh: 10 tarik dan 5 tekuk = 3 shift yang harus dipilih saat booking.
-      </p>
+      </p> */}
     </div>
 
     {/* Scheduler slot waktu */}
@@ -1462,6 +1487,8 @@ const handleDelete = async (id) => {
         background: selectedSlots.length !== getRequiredSlots() ? '#ffebee' : '#e8f5e9',
         borderRadius: '8px'
       }}>
+        * Untuk jadwal berwarna merah muda, harga menjadi x3. Pengujian besi
+         <br />
         {selectedCat === 'pengujian_baja' ? (
           <>1 slot = maks. <strong>5 pengujian baja</strong></>
         ) : (
@@ -1476,8 +1503,8 @@ const handleDelete = async (id) => {
       </div>
       <div 
         className="grid"
-        onMouseLeave={endDrag}
-        onMouseUp={endDrag}
+        // onMouseLeave={endDrag}
+        // onMouseUp={endDrag}
       >
 {Array.from({ length: totalSlots }).map((_, i) => {
   const time = getTimeFromIndex(i);
@@ -1519,8 +1546,8 @@ const isOwnSlot = editingBookingId &&
         isOwnSlot ? "Slot ini milik booking Anda saat ini" :
         unavailable ? "Slot sudah dibooking orang lain" : ""
       }
-      onMouseDown={() => startDrag(i)}
-      onMouseOver={() => dragOver(i)}
+      // onMouseDown={() => startDrag(i)}
+      // onMouseOver={() => dragOver(i)}
       onClick={() => handleClick(i)}
     >
       {time}
