@@ -100,7 +100,7 @@ const TESTING_MASTER = {
         "label": "Coupler",
         "img": "./assets/COUPLER.jpg",
         "brands": ["Master Steel - FBI", "Lautan Steel - FBI", "Interworld Steel - FBI", "Deli - FBI", "Master Steel", "Krakatau Steel - FBI", "Lainnya"],
-        "ukuran_type": "diameter ulir (mm)",
+        "ukuran_type": "Diameter ulir (mm)",
         "ukuran": ["6", "8", "10", "13", "16", "19", "22", "25", "29", "32", "36", "40"],
         "mutu": ["BjTS 280", "BjTS 420B", "BjTS 520"],
         "tests": ["Tarik"]
@@ -110,7 +110,7 @@ const TESTING_MASTER = {
         "label": "Welding Joint",
         "img": "./assets/WELDING_JOINT.jpg",
         "brands": ["Master Steel", "Lautan Steel", "Interworld Steel", "Deli", "Delco Prima", "Baja Perkasa Sentosa", "Citra Baru Steel", "Krakatau Steel", "Krakatau Osaka Steel", "Asia Steel", "Lainnya"],
-        "ukuran_type": "diameter ulir (mm)",
+        "ukuran_type": "Diameter ulir (mm)",
         "ukuran": ["6", "8", "10", "13", "16", "19", "22", "25", "29", "32", "36", "40"],
         "mutu": ["BjTS 280", "BjTS 420B", "BjTS 520"],
         "tests": ["Tarik"]
@@ -128,7 +128,7 @@ const TESTING_MASTER = {
         "ukuran_type": "Diameter × Tinggi (cm)",
         "ukuran": ["10 × 20", "15 × 30", "Lainnya"],
         "mutu_type": ["fc", "K"],
-        "tests": []
+        "tests": ["Sample"]
       },
       {
         "id": "cube_grouting",
@@ -138,7 +138,7 @@ const TESTING_MASTER = {
         "ukuran_type": "Panjang × Lebar × Tinggi (cm)",
         "ukuran": ["5 × 5 × 5", "10 × 10 × 10", "15 × 15 × 15", "Lainnya"],
         "mutu_type": ["fc", "K"],
-        "tests": []
+        "tests": ["Sample"]
       },
       {
         "id": "beam",
@@ -148,7 +148,7 @@ const TESTING_MASTER = {
         "ukuran_type": "Panjang × Lebar × Tinggi (cm)",
         "ukuran": ["15 × 15 × 60"],
         "mutu_type": ["fs"],
-        "tests": []
+        "tests": ["Sample"]
       },
       {
         "id": "paving_block",
@@ -158,7 +158,7 @@ const TESTING_MASTER = {
         "ukuran_type": "Panjang × Lebar × Tinggi (mm/cm) - Manual",
         "ukuran": ["manual"],
         "mutu_type": ["fc", "K"],
-        "tests": []
+        "tests": ["Sample"]
       },
       {
         "id": "coring",
@@ -168,7 +168,7 @@ const TESTING_MASTER = {
         "ukuran_type": "Diameter × Tinggi (cm) - Manual",
         "ukuran": ["manual"],
         "mutu_type": ["fc", "K"],
-        "tests": []
+        "tests": ["Sample"]
       },
       {
         "id": "aac_beton_ringan",
@@ -177,7 +177,7 @@ const TESTING_MASTER = {
         "brands": BETON_PLANT_BRANDS,
         "ukuran_type": "Dimensi Blok (Manual)",
         "mutu_type": ["fc", "K"],
-        "tests": []
+        "tests": ["Sample"]
       }
     ]
   }
@@ -209,7 +209,10 @@ function App() {
   const [selectedUkuran, setSelectedUkuran] = useState('');
   // const [customUkuran, setCustomUkuran] = useState('');
   const [selectedMutu, setSelectedMutu] = useState('');
-  const [qtyByTest, setQtyByTest] = useState({});
+  const [qtyByTest, setQtyByTest] = useState([{
+    merk: "",
+    tipe: "",
+  }]);
   const [qtySample, setQtySample] = useState('');
   // Tambahkan di deklarasi state (dekat selectedSlots)
   const [selectedDate, setSelectedDate] = useState(null); // tanggal yang dipilih
@@ -224,6 +227,7 @@ function App() {
   const [editingBookingId, setEditingBookingId] = useState(null);
   const [originalSlots, setOriginalSlots] = useState([]);  // slot milik booking yang di-edit
   const [originalDateKey, setOriginalDateKey] = useState(null);
+  const [totalForm, setTotalForm] = useState(1)
 
   // Login / Register handler
   const handleAuth = async (e) => {
@@ -266,12 +270,14 @@ function App() {
     }
   }, []);
 
-  // Helper update qty
-  const updateQty = (test, value) => {
-    setQtyByTest((prev) => ({
-      ...prev,
-      [test]: value === '' ? '' : Number(value),
-    }));
+  const updateByIndex = (index, props, newValue) => {
+    setQtyByTest((prev) =>
+      prev.map((item, i) =>
+        i === index
+          ? { ...item, [props]: newValue }  // update properti secara dinamis
+          : item
+      )
+    );
   };
 
   // Validasi tombol next
@@ -289,11 +295,17 @@ function App() {
     resetForm();
   };
 
-  const getTotalQty = () => {
-    return (
-      Object.values(qtyByTest).reduce((sum, v) => sum + (Number(v) || 0), 0)
-      + (Number(qtySample) || 0)
-    );
+  const getTotalQty = (count) => {
+    let toCount = count || qtyByTest
+    return toCount.reduce((total, item) => {
+      // Hanya jumlahkan Tarik dan Tekuk (jika ada)
+      total += Number(item.Tarik || 0);
+      total += Number(item.Tekuk || 0);
+      total += Number(item.Geser || 0);
+      total += Number(item.Sample || 0);
+
+      return total;
+    }, 0);
   };
 
   const resetForm = () => {
@@ -314,6 +326,18 @@ function App() {
     setEditingBookingId(null);
     setOriginalSlots([]);       // ← tambah
     setOriginalDateKey(null);   // ← tambah
+
+    setQtyByTest([{
+        merk: "",
+        tipe: "",
+        ukuran: "",
+        mutu: "",
+        Tarik: "",
+        Tekuk: "",
+      },
+    ]);
+
+    setTotalForm(1);
   };
 
 
@@ -404,33 +428,15 @@ function App() {
       return;
     }
 
-    // const totalQty = getTotalQty();
-
-    // if (selectedSlots.length !== totalQty) {
-    //   alert(`Jumlah slot harus sama dengan total pengujian (${totalQty})`);
-    //   return;
-    // }
-
-
-
     const required = getRequiredSlots();
 
     if (selectedSlots.length !== required) {
-      // Tidak pakai alert setiap kali, biar tidak mengganggu
-      // alert hanya jika user selesai memilih tapi salah jumlah
-      // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
-      // Tapi kalau mau ketat:
       if (selectedSlots.length > required) {
         alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
         setClickStart(null);
         return;
       }
-      // Jika kurang, biarkan saja (user mungkin mau lanjut drag)
     }
-
-
-
-
 
     const finalMerk = selectedMerk === 'Lainnya' ? customMerk : selectedMerk;
     const finalUkuran = selectedUkuran === 'Lainnya' ? customUkuran : selectedUkuran;
@@ -581,94 +587,6 @@ function App() {
     return blockedSlots.includes(index) || bookedForThisDate.includes(index);
   };
 
-  // const startDrag = (index) => {
-  //   if (isUnavailable(index)) return;
-  //   setIsDragging(true);
-  //   setDragStart(index);
-  //   setSelectedSlots([index]);
-  // };
-
-  // const dragOver = (index) => {
-  //   if (!isDragging || dragStart === null) return;
-  //   if (isUnavailable(index)) return;
-
-  //   const min = Math.min(dragStart, index);
-  //   const max = Math.max(dragStart, index);
-  //   const range = [];
-
-  //   for (let i = min; i <= max; i++) {
-  //     if (isUnavailable(i)) {
-  //       setSelectedSlots([]);
-  //       return;
-  //     }
-  //     range.push(i);
-  //   }
-
-  //   const required = getRequiredSlots();
-
-  //   if (range.length !== required) {
-  //     // Tidak pakai alert setiap kali, biar tidak mengganggu
-  //     // alert hanya jika user selesai memilih tapi salah jumlah
-  //     // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
-  //     // Tapi kalau mau ketat:
-  //     if (range.length > required) {
-  //       alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
-  //       setClickStart(null);
-  //       return;
-  //     }
-  //     // Jika kurang, biarkan saja (user mungkin mau lanjut drag)
-  //   }
-
-  //   setSelectedSlots(range);
-  //   setClickStart(null);
-  // };
-
-  // const endDrag = () => {
-  //   setIsDragging(false);
-  //   setDragStart(null);
-  // };
-
-  // const handleClick = (index) => {
-  //   if (isUnavailable(index)) return;
-
-  //   if (clickStart === null) {
-  //     // klik pertama
-  //     setClickStart(index);
-  //     setSelectedSlots([index]);
-  //   } else {
-  //     // klik kedua
-  //     const min = Math.min(clickStart, index);
-  //     const max = Math.max(clickStart, index);
-  //     const range = [];
-
-  //     for (let i = min; i <= max; i++) {
-  //       if (isUnavailable(i)) {
-  //         setSelectedSlots([]); // batal
-  //         setClickStart(null);
-  //         return;
-  //       }
-  //       range.push(i);
-  //     }
-
-  //     const required = getRequiredSlots();
-
-  //     if (range.length !== required) {
-  //       // Tidak pakai alert setiap kali, biar tidak mengganggu
-  //       // alert hanya jika user selesai memilih tapi salah jumlah
-  //       // Untuk UX lebih baik: biarkan user drag/klik bebas, tapi tombol simpan yang menolak
-  //       // Tapi kalau mau ketat:
-  //       if (range.length > required) {
-  //         alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
-  //         setClickStart(null);
-  //         return;
-  //       }
-  //     }
-
-  //     setSelectedSlots(range);
-  //     setClickStart(null);
-  //   }
-  // };
-
   const handleClick = (index) => {
     if (isUnavailable(index)) return;
 
@@ -724,6 +642,7 @@ function App() {
     setSelectedUkuran(sample.ukuran);
     setSelectedMutu(sample.mutu);
     setQtyByTest(sample.tests || {});
+    setTotalForm(sample.tests.length)
     setQtySample(sample.qty_sample || 0);
     setEditingBookingId(sample.id);
     setOriginalSlots(sample.selected_slots || []);
@@ -871,7 +790,7 @@ function App() {
                   borderRadius: '6px',
                   fontSize: '16px',
                   cursor: 'pointer',
-                  marginTop: '10px'
+                  marginTop: '5px'
                 }}
               >
                 {registerMode ? 'Daftar' : 'Masuk'}
@@ -962,54 +881,75 @@ function App() {
 
             return (
               <div key={s.id || idx} className="sample-card">
-                <h4>{s.material} - {s.merk || '-'}</h4>
+                <h4>{s.kategori || '-'} - {s.material}</h4>
+
+
+
+
+                <div class="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Merk</th>
+                        <th>Ukuran</th>
+                        <th>Mutu</th>
+                        <th>Pengujian</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+
+
+                      {s.tests?.map((testItem, idx) => (
+                        <>
+
+
+                          {/* Tampilkan semua pengujian */}
+                          {Object.entries(testItem).filter(([testName]) => testName === "Tarik" || testName === "Tekuk" || testName === "Geser" || testName === "Sample").map(([testName, qty]) =>
+                            Number(qty) > 0 && (
+                              <>
+                                <tr>
+                                  <td>{testItem.merk === "Lainnya" ? testItem.merk_lainnya : testItem.merk}</td>
+                                  <td>{testItem.ukuran === "Lainnya" ? testItem.ukuran_lainnya : testItem.ukuran}</td>
+                                  <td>{testItem.mutu_FC_K ? `${testItem.mutu_FC_K} ${testItem.mutu}` : testItem.mutu}</td>
+                                  <td>→ {testName}: <strong>{qty}</strong> kali</td>
+                                </tr>
+                              </>
+                            )
+                          )}
+                        </>
+                      ))}
+
+                      <tr class="total-row">
+                        <td colspan="3">Grand Total</td>
+                        <td class="text-center">{getTotalQty(s.tests)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+
 
                 <div
                   style={{
                     fontSize: '13px',
                     display: 'grid',
                     gridTemplateColumns: '140px 1fr',
-                    gap: '6px 16px',
+                    gap: '5px',
                     alignItems: 'baseline',
                     marginTop: '8px'
                   }}
                 >
-                  <div style={{ fontWeight: 'bold' }}>Kategori</div>
-                  <div>{s.kategori || '-'}</div>
 
-                  <div style={{ fontWeight: 'bold' }}>Tipe</div>
-                  <div>{s.tipe || '-'}</div>
 
-                  <div style={{ fontWeight: 'bold' }}>Ukuran</div>
-                  <div>{s.ukuran || '-'}</div>
-
-                  <div style={{ fontWeight: 'bold' }}>Mutu</div>
-                  <div>{s.mutu || '-'}</div>
-
-                  {Object.keys(s.tests || {}).length > 0 && (
-                    <>
-                      <div style={{ fontWeight: 'bold', alignSelf: 'start' }}>Pengujian</div>
-                      <div>
-                        {Object.entries(s.tests).map(([test, qty]) => (
-                          qty > 0 && (
-                            <div key={test}>
-                              → {test}: {qty} kali
-                            </div>
-                          )
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {s.qty_sample > 0 && (
+                  {/* {s.qty_sample > 0 && (
                     <>
                       <div style={{ fontWeight: 'bold' }}>Jumlah Sample (beton)</div>
                       <div>{s.qty_sample} unit</div>
                     </>
-                  )}
+                  )} */}
 
-                  <div style={{ fontWeight: 'bold' }}>Total Pengujian</div>
-                  <div>{s.total_pengujian || 0} unit</div>
+                  {/* <div style={{ fontWeight: 'bold' }}>Total Pengujian</div>
+                  <div>{s.total_pengujian || 0} unit</div> */}
 
                   <div style={{ fontWeight: 'bold' }}>Tanggal</div>
                   <div>{s.tanggal || '-'}</div>
@@ -1017,8 +957,8 @@ function App() {
                   <div style={{ fontWeight: 'bold' }}>Jadwal</div>
                   <div>{s.jadwal || 'Tidak ada slot dipilih'}</div>
 
-                  <div style={{ fontWeight: 'bold' }}>Dibuat</div>
-                  <div>{s.created_at || s.createdAt || '-'}</div>
+                  {/* <div style={{ fontWeight: 'bold' }}>Dibuat</div>
+                  <div>{s.created_at || s.createdAt || '-'}</div> */}
                 </div>
 
                 {/* Tombol Edit & Delete */}
@@ -1103,292 +1043,291 @@ function App() {
           </>
         )}
 
-        {step === 2 && (
-          <>
-            {/* ... form merk, ukuran, mutu, qty sama seperti sebelumnya ... */}
-            {/* contoh singkat */}
-            <span className="grid-label">
-              3. Pilih {selectedCat === 'pengujian_beton' ? 'Plant' : 'Merek'}
-            </span>
-            <div className="image-grid">
-              {selectedMat.brands.map(b => (
-                b === 'Lainnya' ? (
-                  // <div key={b} className="image-card">
-                  <input
-                    type="text"
-                    style={{ margin: 0 }}
-                    className={`image-card ${selectedMerk === b ? 'active' : ''}`}
-                    placeholder="Masukkan merek manual"
-                    value={customMerk}
-                    onChange={(e) => {
-                      setCustomMerk(e.target.value);
-                      setSelectedMerk(b);
-                    }}
-                  />
-                  // </div>
-                ) : (
-                  <div
-                    key={b}
-                    className={`image-card ${selectedMerk === b ? 'active' : ''}`}
-                    onClick={() => selectMerk(b)}
-                  >
-                    {b}
-                  </div>
-                )))}
-            </div>
-
-            <div className="form-nav">
-              <button onClick={() => setStep(1)}>Kembali</button>
-              <button
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                onClick={() => setStep(3)}
-                disabled={!customMerk && selectedMerk === 'Lainnya' || (!selectedMerk && selectedMerk !== 'Lainnya')}
-              >
-                Lanjut
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === 3 && selectedMat && (
+        {(step === 3 || step === 2) && selectedMat && (
           <div>
-            <h3 className="detail-title">Detail Teknis Sampel</h3>
+            {Array(totalForm).fill(null).map((_, i) => (
+              <>
+                <h3 className="detail-title">Detail Teknis Sampel {i + 1}</h3>
+                {/* 1. PILIH MERK */}
+                <div className="form-group">
+                  <label>
+                    Pilih {selectedCat === 'pengujian_beton' ? 'Plant' : 'Merek'}
+                  </label>
 
-            {/* 1. TIPE KHUSUS REINFORCEMENT BAR */}
-            {selectedMat.id === "reinforcement_bar" && (
-              <div className="form-group">
-                <label>Jenis Tulangan</label>
-                <div className="type-options">
-                  <button
-                    type="button"
-                    className={`type-btn ${selectedTipe === "Polos" ? "active" : ""}`}
-                    onClick={() => {
-                      setSelectedTipe("Polos");
-                      setSelectedUkuran("");
+                  <select
+                    className="detail-select"
+                    value={qtyByTest[i]["merk"]}
+                    onChange={(e) => {
+                      updateByIndex(i, "merk", e.target.value)
                     }}
                   >
-                    Polos
-                  </button>
-                  <button
-                    type="button"
-                    className={`type-btn ${selectedTipe === "Sirip/Ulir" ? "active" : ""}`}
-                    onClick={() => {
-                      setSelectedTipe("Sirip/Ulir");
-                      setSelectedUkuran("");
-                    }}
-                  >
-                    Sirip / Ulir
-                  </button>
+                    <option value="">Pilih {selectedCat === 'pengujian_beton' ? 'Plant' : 'Merek'}</option>
+                    {selectedMat.brands.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+
+                  {qtyByTest[i]["merk"] === "Lainnya" && (
+                    <input
+                      type="text"
+                      className="detail-input"
+                      style={{ marginTop: '5px' }}
+                      placeholder="Masukkan Merk"
+                      value={qtyByTest[i]["merk_lainnya"]}
+                      onChange={(e) => {
+                        updateByIndex(i, "merk_lainnya", e.target.value)
+                      }}
+                    />
+                  )}
+
                 </div>
-              </div>
-            )}
 
-            {/* 2. UKURAN */}
-            {selectedMat.ukuran && (
-              <div className="form-group">
-                <label>{selectedMat.ukuran_type || "Ukuran / Diameter / Tebal"}</label>
+                {/* 1. TIPE KHUSUS REINFORCEMENT BAR */}
+                {selectedMat.id === "reinforcement_bar" && (
+                  <div className="form-group">
+                    <label>Jenis Tulangan</label>
+                    <div className="type-options">
+                      <button
+                        type="button"
+                        className={`type-btn ${qtyByTest[i]["tipe"] === "Polos" ? "active" : ""}`}
+                        onClick={() => {
+                          setSelectedTipe("Polos");
+                          setSelectedUkuran("");
+                          updateByIndex(i, "tipe", "Polos")
+                        }}
+                      >
+                        Polos
+                      </button>
+                      <button
+                        type="button"
+                        className={`type-btn ${qtyByTest[i]["tipe"] === "Sirip/Ulir" ? "active" : ""}`}
+                        onClick={() => {
+                          setSelectedTipe("Sirip/Ulir");
+                          setSelectedUkuran("");
+                          updateByIndex(i, "tipe", "Sirip/Ulir")
+                        }}
+                      >
+                        Sirip / Ulir
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-                {selectedMat.id === "reinforcement_bar" ? (
-                  // Khusus reinforcement_bar: pakai diameter_polos/ulir
-                  <>
-                    {selectedTipe ? (
+                {/* 2. UKURAN */}
+                {selectedMat.ukuran && (
+                  <div className="form-group">
+                    <label>{selectedMat.ukuran_type || "Ukuran / Diameter / Tebal"}</label>
+
+                    {selectedMat.id === "reinforcement_bar" ? (
+                      // Khusus reinforcement_bar: pakai diameter_polos/ulir
+                      <>
+                        {qtyByTest[i]["tipe"] ? (
+                          <>
+                            <select
+                              className="detail-select"
+                              value={qtyByTest[i]["ukuran"]}
+                              onChange={(e) => updateByIndex(i, "ukuran", e.target.value)}
+                            >
+                              <option value="">Pilih Diameter</option>
+                              {(qtyByTest[i]["tipe"] === "Polos"
+                                ? selectedMat.ukuran.diameter_polos || []
+                                : selectedMat.ukuran.diameter_ulir || []
+                              ).map((size) => (
+                                <option key={size} value={size}>
+                                  {size} mm
+                                </option>
+                              ))}
+                              <option value="Lainnya">Lainnya</option>
+                            </select>
+
+                            {qtyByTest[i]["ukuran"] === "Lainnya" && (
+                              <input
+                                type="text"
+                                className="detail-input"
+                                style={{ marginTop: '5px' }}
+                                placeholder="Masukkan Ukuran"
+                                value={qtyByTest[i]["ukuran_lainnya"]}
+                                onChange={(e) => updateByIndex(i, "ukuran_lainnya", e.target.value)}
+                              />
+                            )}
+                          </>
+                        ) : (
+                          <p style={{ color: '#e53935', fontSize: '14px', marginTop: '8px' }}>
+                            Pilih jenis tulangan terlebih dahulu (Polos / Sirip / Ulir)
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      // Material LAIN: ukuran pasti array → aman dipanggil .map()
                       <>
                         <select
                           className="detail-select"
-                          value={selectedUkuran}
-                          onChange={(e) => setSelectedUkuran(e.target.value)}
+                          value={qtyByTest[i]["ukuran"]}
+                          onChange={(e) => updateByIndex(i, "ukuran", e.target.value)}
                         >
-                          <option value="">Pilih Diameter</option>
-                          {(selectedTipe === "Polos"
-                            ? selectedMat.ukuran.diameter_polos || []
-                            : selectedMat.ukuran.diameter_ulir || []
-                          ).map((size) => (
-                            <option key={size} value={size}>
-                              {size} mm
-                            </option>
-                          ))}
-                          <option value="Lainnya">Lainnya</option>
+                          <option value="">Pilih {selectedMat.ukuran_type?.toLowerCase() || "ukuran"}</option>
+                          {Array.isArray(selectedMat.ukuran) ? (
+                            selectedMat.ukuran.map((size) => (
+                              <option key={size} value={size}>
+                                {size}
+                                {size !== "Lainnya" && selectedMat.ukuran_type?.includes("mm") ? " mm" : ""}
+                              </option>
+                            ))
+                          ) : (
+                            <option disabled>Tidak ada data ukuran</option>
+                          )}
                         </select>
 
                         {selectedUkuran === "Lainnya" && (
                           <input
                             type="text"
                             className="detail-input"
-                            style={{ marginTop: '10px' }}
-                            placeholder="Contoh: 12.7 mm"
+                            style={{ marginTop: '5px' }}
+                            placeholder="Masukkan ukuran manual"
                             value={customUkuran}
                             onChange={(e) => setCustomUkuran(e.target.value.trim())}
                           />
                         )}
                       </>
-                    ) : (
-                      <p style={{ color: '#e53935', fontSize: '14px', marginTop: '8px' }}>
-                        Pilih jenis tulangan terlebih dahulu (Polos / Sirip / Ulir)
-                      </p>
                     )}
-                  </>
-                ) : (
-                  // Material LAIN: ukuran pasti array → aman dipanggil .map()
-                  <>
+                  </div>
+                )}
+
+                {/* 3. MUTU */}
+                <div className="form-group">
+                  <label>Mutu Material</label>
+
+                  {selectedMat.mutu && selectedMat.mutu.length > 0 ? (
                     <select
                       className="detail-select"
-                      value={selectedUkuran}
-                      onChange={(e) => setSelectedUkuran(e.target.value)}
+                      value={qtyByTest[i]["mutu"]}
+                      onChange={(e) => updateByIndex(i, "mutu", e.target.value)}
                     >
-                      <option value="">Pilih {selectedMat.ukuran_type?.toLowerCase() || "ukuran"}</option>
-                      {Array.isArray(selectedMat.ukuran) ? (
-                        selectedMat.ukuran.map((size) => (
-                          <option key={size} value={size}>
-                            {size}
-                            {size !== "Lainnya" && selectedMat.ukuran_type?.includes("mm") ? " mm" : ""}
-                          </option>
-                        ))
-                      ) : (
-                        <option disabled>Tidak ada data ukuran</option>
-                      )}
+                      <option value="">Pilih Mutu</option>
+                      {selectedMat.mutu.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
                     </select>
+                  ) : (
+                    <>
+                      {selectedCat === "pengujian_beton" && (
+                          <>
+                            <div className="type-options">
+                              <button
+                                type="button"
+                                className={`type-btn ${qtyByTest[i]["mutu_FC_K"] === "FC" ? "active" : ""}`}
+                                onClick={() => {
+                                  updateByIndex(i, "mutu_FC_K", "FC")
+                                }}
+                              >
+                                FC
+                              </button>
+                              <button
+                                type="button"
+                                className={`type-btn ${qtyByTest[i]["mutu_FC_K"] === "K" ? "active" : ""}`}
+                                onClick={() => {
+                                  updateByIndex(i, "mutu_FC_K", "K")
+                                }}
+                              >
+                                K
+                              </button>
+                            </div>
+                            {qtyByTest[i]["mutu_FC_K"] && (
+                              <input
+                                type="text"
+                                className="detail-input"
+                                style={{ marginTop: '5px' }}
+                                placeholder="Masukkan mutu secara manual"
+                                value={qtyByTest[i]["mutu"]}
+                                onChange={(e) => updateByIndex(i, "mutu", e.target.value)}
+                              />
+                            )}
+                          </>
+                      )}
 
-                    {selectedUkuran === "Lainnya" && (
-                      <input
-                        type="text"
-                        className="detail-input"
-                        style={{ marginTop: '10px' }}
-                        placeholder="Masukkan ukuran manual"
-                        value={customUkuran}
-                        onChange={(e) => setCustomUkuran(e.target.value.trim())}
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* 3. MUTU */}
-            <div className="form-group">
-              <label>Mutu Material</label>
-
-              {selectedMat.mutu && selectedMat.mutu.length > 0 ? (
-                <select
-                  className="detail-select"
-                  value={selectedMutu}
-                  onChange={(e) => setSelectedMutu(e.target.value)}
-                >
-                  <option value="">Pilih Mutu</option>
-                  {selectedMat.mutu.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p style={{ color: '#64748b', fontStyle: 'italic', marginTop: '8px' }}>
-                  Tidak ada opsi mutu standar
-                </p>
-              )}
-
-              {selectedCat === "pengujian_beton" && (
-                <div className="mutu-fields">
-                  <div className="mutu-field">
-                    <label>fc'</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      className="detail-input"
-                      placeholder="Contoh: 30"
-                      onChange={(e) => setCustomMutu(`fc' ${e.target.value} MPa`)}
-                    />
-                  </div>
-
-                  <div className="mutu-field">
-                    <label>K</label>
-                    <input
-                      type="number"
-                      className="detail-input"
-                      placeholder="Contoh: 300"
-                      onChange={(e) => setCustomMutu(`K-${e.target.value}`)}
-                    />
-                  </div>
-
-                  {selectedMat.id === "beam" && (
-                    <div className="mutu-field" style={{ gridColumn: '1 / -1' }}>
-                      <label>fs</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        className="detail-input"
-                        placeholder="Contoh: 4.0"
-                        onChange={(e) => setCustomMutu(`fs ${e.target.value} MPa`)}
-                      />
-                    </div>
+                      {selectedMutu === "Lainnya" && selectedCat !== "pengujian_beton" && (
+                        <input
+                          type="text"
+                          className="detail-input"
+                          style={{ marginTop: '5px' }}
+                          placeholder="Masukkan mutu secara manual"
+                          value={customMutu}
+                          onChange={(e) => setCustomMutu(e.target.value.trim())}
+                        />
+                      )}
+                    </>
                   )}
+
+
                 </div>
-              )}
 
-              {selectedMutu === "Lainnya" && selectedCat !== "pengujian_beton" && (
-                <input
-                  type="text"
-                  className="detail-input"
-                  style={{ marginTop: '10px' }}
-                  placeholder="Masukkan mutu secara manual"
-                  value={customMutu}
-                  onChange={(e) => setCustomMutu(e.target.value.trim())}
-                />
-              )}
-            </div>
-
-            {/* 4. Jumlah Pengujian */}
-            {selectedMat.tests?.length > 0 && (
-              <div className="form-group">
-                <label>Jumlah Pengujian</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {selectedMat.tests.map((test) => (
-                    <div className="test-row">
-                      <span className="test-name">{test}</span>
-                      <input
-                        type="number"
-                        min="0"
-                        className="detail-input test-qty"
-                        value={qtyByTest[test] || ""}
-                        onChange={(e) => updateQty(test, e.target.value)}
-                        placeholder="0"
-                      />
-                      <span className="test-unit">buah</span>
+                {/* 4. Jumlah Pengujian */}
+                {selectedMat.tests?.length > 0 && (
+                  <div className="form-group">
+                    <label>Jumlah Pengujian</label>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {selectedMat.tests.map((test) => (
+                        <div className="test-row">
+                          <span className="test-name">{test}</span>
+                          <input
+                            type="number"
+                            min="0"
+                            className="detail-input test-qty"
+                            value={qtyByTest[i][test]}
+                            onChange={(e) => updateByIndex(i, test, e.target.value)}
+                            placeholder="0"
+                          />
+                          <span className="test-unit">buah</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {/* 5. Jumlah Sample beton */}
-            {selectedCat === "pengujian_beton" && (
-              <div className="form-group">
-                <label>Jumlah Sample</label>
-                <input
-                  type="number"
-                  min="1"
-                  className="detail-input"
-                  style={{ maxWidth: '240px' }}
-                  value={qtySample}
-                  onChange={(e) => setQtySample(e.target.value)}
-                  placeholder="Contoh: 12 sample"
-                />
-              </div>
-            )}
+                {/* 5. Jumlah Sample beton */}
+                {/* {selectedCat === "pengujian_beton" && (
+                  <div className="form-group">
+                    <label>Jumlah Sample</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="detail-input"
+                      style={{ maxWidth: '240px' }}
+                      value={qtySample}
+                      onChange={(e) => setQtySample(e.target.value)}
+                      placeholder="Contoh: 12 sample"
+                    />
+                  </div>
+                )} */}
+              </>
+
+            ))}
 
             {/* Navigasi */}
             <div className="form-nav step3">
-              <button className="btn-back" onClick={() => setStep(2)}>
+              <button className="btn-back" onClick={() => setStep(1)}>
                 Kembali
+              </button>
+              <button className="btn-back" onClick={() => {
+                console.log(qtyByTest)
+                setQtyByTest((prev) => [
+                  ...prev,
+                  {
+                    merk: "",           // default kosong
+                    tipe: "",
+                  },
+                ]);
+                setTotalForm(totalForm + 1)
+              }}>
+                Add
               </button>
               <button
                 className="btn-next"
-                onClick={() => setStep(4)}
-                disabled={
-                  !isValidNext() ||
-                  (selectedMat.id === "reinforcement_bar" && !selectedTipe) ||
-                  (selectedUkuran === "Lainnya" && !customUkuran.trim()) ||
-                  (selectedMutu === "Lainnya" && !customMutu.trim())
-                }
+                onClick={() => { setStep(4) }}
               >
                 Lanjut ke Jadwal
               </button>
@@ -1470,11 +1409,6 @@ function App() {
                   );
                 })}
               </div>
-              {/* <p style={{ fontSize: '13px', color: '#e53935', marginTop: '12px', textAlign: 'center' }}>
-        * Untuk jadwal berwarna merah muda, harga menjadi x3.
-        Pengujian besi: 1 jadwal maksimal 5 kali tarik/tekuk. Jika lebih, silakan klik Tambahan Jadwal.
-        Contoh: 10 tarik dan 5 tekuk = 3 shift yang harus dipilih saat booking.
-      </p> */}
             </div>
 
             {/* Scheduler slot waktu */}

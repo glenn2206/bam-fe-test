@@ -22,6 +22,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      font-size: 12px;
     }
 
     /* Layout & Header */
@@ -187,7 +188,7 @@
       right: 0;
       background: rgba(0, 0, 0, 0.55);
       color: white;
-      font-size: 12px;
+      /* font-size: 12px; */
       padding: 6px;
       text-align: center;
       font-weight: 600;
@@ -198,8 +199,8 @@
     input,
     select {
       width: 100%;
-      padding: 12px;
-      margin-top: 10px;
+      padding: 5px;
+      /* margin-top: 10px; */
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 14px;
@@ -253,7 +254,7 @@
 
     .time-label {
       padding: 8px;
-      font-size: 12px;
+      /* font-size: 12px; */
       border-right: 1px solid #eee;
       background: #fafafa;
     }
@@ -292,7 +293,7 @@
     }
 
 .detail-title {
-  font-size: 16px;
+  /* font-size: 16px; */
   font-weight: 700;
   color: var(--primary-dark);
   margin: 0 0 20px 0;
@@ -301,7 +302,7 @@
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 }
 
 .form-group label {
@@ -309,7 +310,7 @@
   font-size: 14px;
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
 }
 
 /* Tombol Polos / Sirip (mirip image-card active) */
@@ -320,7 +321,7 @@
 
 .type-btn {
   flex: 1;
-  padding: 14px 16px;
+  padding: 5px;
   border: 2px solid #d1d5db;
   border-radius: 10px;
   background: white;
@@ -347,7 +348,7 @@
 .detail-input,
 .detail-select {
   width: 100%;
-  padding: 12px 16px;
+  padding: 5px;
   border: 1px solid #ccc;
   border-radius: 10px;
   font-size: 14px;
@@ -369,7 +370,7 @@
 }
 
 .mutu-field label {
-  font-size: 13px;
+  /* font-size: 13px; */
   color: #555;
   margin-bottom: 6px;
   display: block;
@@ -380,9 +381,9 @@
 .test-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 5px;
   background: #f8fafc;
-  padding: 14px 16px;
+  padding: 5px;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   margin-bottom: 10px;
@@ -430,7 +431,7 @@
 .form-nav.step3 .btn-next {
   background: var(--primary);
   color: white;
-  margin-left: 12px;
+  /* margin-left: 12px; */
 }
 
 .form-nav.step3 .btn-next:hover {
@@ -452,3 +453,51 @@
 .slot.booked:hover {
   background: #2e7d32 !important;
 }
+
+.table-container {
+      max-width: 900px;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 5px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      background: #f1f5f9;
+      font-weight: 600;
+      color: #1e293b;
+      /* text-transform: uppercase; */
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+
+    tr:hover {
+      background: #f8fafc;
+    }
+
+    td {
+      font-size: 0.95rem;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .total-row {
+      font-weight: bold;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
