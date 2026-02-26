@@ -1,25 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
-// const API_BASE = 'http://localhost:5000';
 const API_BASE = 'https://bam-be.onrender.com';
-const BETON_PLANT_BRANDS = [
-  "Adhimix",
-  "Merak Jaya Beton",
-  "Bangun Rancang Indonesia Kita (Brik)",
-  "Pionirbeton",
-  "Farika Beton",
-  "Scg Fresh Beton",
-  "Sika",
-  "Karya Beton",
-  "Sudhira Solusi Bangun Beton",
-  "Kbn Prima Beton",
-  "Wika Beton",
-  "Jayamix",
-  "Holcim Beton",
-  "Merah Putih Beton",
-  "Lainnya"
-];
+const BETON_PLANT_BRANDS = ["Adhimix", "Merak Jaya Beton", "Bangun Rancang Indonesia Kita (Brik)", "Pionirbeton", "Farika Beton", "Scg Fresh Beton", "Sika", "Karya Beton", "Sudhira Solusi Bangun Beton", "Kbn Prima Beton", "Wika Beton", "Jayamix", "Holcim Beton", "Merah Putih Beton", "Lainnya"];
 const TESTING_MASTER = {
   "pengujian_baja": {
     "label": "PENGUJIAN BAJA",
@@ -189,35 +172,12 @@ function App() {
   const [step, setStep] = useState(0);
   const [selectedCat, setSelectedCat] = useState('steel');
   const [selectedMat, setSelectedMat] = useState(null);
-  const [selectedMerk, setSelectedMerk] = useState('');
-  const [ukuran, setUkuran] = useState('');
-  const [mutu, setMutu] = useState('');
-  const [uji, setUji] = useState('');
-  const [qty, setQty] = useState('');
-  const [customMerk, setCustomMerk] = useState('');
-  const [customUkuran, setCustomUkuran] = useState('');
-  const [customMutu, setCustomMutu] = useState('');
-
-  // Scheduler states
-  const [selectedSlots, setSelectedSlots] = useState([]);        // sementara (highlight)
-  const [bookedSlotsByDate, setBookedSlotsByDate] = useState({});        // permanen setelah simpan
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(null);
-  const [clickStart, setClickStart] = useState(null);
-  // Tambahan state
-  const [selectedTipe, setSelectedTipe] = useState('');
-  const [selectedUkuran, setSelectedUkuran] = useState('');
-  // const [customUkuran, setCustomUkuran] = useState('');
-  const [selectedMutu, setSelectedMutu] = useState('');
-  const [qtyByTest, setQtyByTest] = useState([{
-    merk: "",
-    tipe: "",
-  }]);
+  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [bookedSlotsByDate, setBookedSlotsByDate] = useState({});
+  const [qtyByTest, setQtyByTest] = useState([{ merk: "", tipe: "" }]);
   const [qtySample, setQtySample] = useState('');
-  // Tambahkan di deklarasi state (dekat selectedSlots)
-  const [selectedDate, setSelectedDate] = useState(null); // tanggal yang dipilih
-  // Tambahkan di atas function App()
-  const [showLoginPopup, setShowLoginPopup] = useState(true); // muncul pertama kali
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showLoginPopup, setShowLoginPopup] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginNoHp, setLoginNoHp] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -225,33 +185,31 @@ function App() {
   const [registerName, setRegisterName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [editingBookingId, setEditingBookingId] = useState(null);
-  const [originalSlots, setOriginalSlots] = useState([]);  // slot milik booking yang di-edit
+  const [originalSlots, setOriginalSlots] = useState([]);
   const [originalDateKey, setOriginalDateKey] = useState(null);
-  const [totalForm, setTotalForm] = useState(1)
+  const [totalForm, setTotalForm] = useState(1);
+  const [headerData, setHeaderData] = useState({
+    nama_proyek: '',
+    nama_perusahaan: '',
+    lokasi_proyek: '',
+    kontak_person: ''
+  });
 
-  // Login / Register handler
   const handleAuth = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-
     const endpoint = registerMode ? '/api/auth/register' : '/api/auth/login';
     const body = registerMode
       ? { no_hp: loginNoHp, password: loginPassword, name: registerName }
       : { no_hp: loginNoHp, password: loginPassword };
-
     try {
       const res = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-
       const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.error || 'Gagal autentikasi');
-      }
-
+      if (!res.ok) throw new Error(result.error || 'Gagal autentikasi');
       localStorage.setItem('token', result.token);
       setIsLoggedIn(true);
       setShowLoginPopup(false);
@@ -261,7 +219,6 @@ function App() {
     }
   };
 
-  // Cek token saat app load
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -270,25 +227,91 @@ function App() {
     }
   }, []);
 
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // 1. Fungsi Fetch Data (Load awal)
+  useEffect(() => {
+    const fetchHeaderData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token || !isLoggedIn) {
+        setIsInitialLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/projects/my-project`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        if (data && data.id) {
+          // Update state tanpa memicu auto-save (handled by isInitialLoading)
+          setHeaderData({
+            nama_proyek: data.nama_proyek || '',
+            nama_perusahaan: data.nama_perusahaan || '',
+            lokasi_proyek: data.lokasi_proyek || '',
+            kontak_person: data.kontak_person || ''
+          });
+        }
+      } catch (err) {
+        console.error("Load error:", err);
+      } finally {
+        setIsInitialLoading(false); // Selesai loading, auto-save diizinkan setelah ini
+      }
+    };
+
+    fetchHeaderData();
+  }, [isLoggedIn]);
+
+  const [saveStatus, setSaveStatus] = useState('saved'); // 'typing', 'saving', 'saved', 'error'
+
+// Logic Auto-Save Refactored
+useEffect(() => {
+  if (isInitialLoading || !isLoggedIn || !headerData.nama_proyek) return;
+
+  // Saat user berhenti mengetik, status jadi 'saving'
+  const delayDebounceFn = setTimeout(async () => {
+    setSaveStatus('saving');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/api/projects/sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(headerData)
+      });
+      
+      if (res.ok) {
+        setSaveStatus('saved');
+      } else {
+        setSaveStatus('error');
+      }
+    } catch (err) {
+      setSaveStatus('error');
+      console.error(err);
+    }
+  }, 2000); // 2 detik lebih responsif untuk UX daripada 5 detik
+
+  return () => clearTimeout(delayDebounceFn);
+}, [headerData, isLoggedIn, isInitialLoading]);
+
+  const handleHeaderChange = (e) => {
+    setSaveStatus('typing'); // Langsung berubah saat user mulai mencet keyboard
+    const { name, value } = e.target;
+    setHeaderData(prev => ({ ...prev, [name]: value }));
+  };
+
   const updateByIndex = (index, props, newValue) => {
     setQtyByTest((prev) =>
       prev.map((item, i) =>
-        i === index
-          ? { ...item, [props]: newValue }  // update properti secara dinamis
-          : item
+        i === index ? { ...item, [props]: newValue } : item
       )
     );
   };
 
-  // Validasi tombol next
-  const isValidNext = () => {
-    // Harus ada minimal 1 qty > 0 atau sample > 0
-    const totalQty = Object.values(qtyByTest).reduce((sum, v) => sum + (Number(v) || 0), 0) + (Number(qtySample) || 0);
-    return totalQty > 0 || Number(qtySample) > 0;
-  };
-
   const schedulerRef = useRef(null);
-
   const openForm = () => setIsFormOpen(true);
   const closeForm = () => {
     setIsFormOpen(false);
@@ -296,14 +319,12 @@ function App() {
   };
 
   const getTotalQty = (count) => {
-    let toCount = count || qtyByTest
+    let toCount = count || qtyByTest;
     return toCount.reduce((total, item) => {
-      // Hanya jumlahkan Tarik dan Tekuk (jika ada)
       total += Number(item.Tarik || 0);
       total += Number(item.Tekuk || 0);
       total += Number(item.Geser || 0);
       total += Number(item.Sample || 0);
-
       return total;
     }, 0);
   };
@@ -311,49 +332,21 @@ function App() {
   const resetForm = () => {
     setStep(0);
     setSelectedMat(null);
-    setSelectedMerk('');
-    setUkuran('');
-    setMutu('');
-    setUji('');
-    setQty('');
-    setCustomMerk('');
-    setCustomUkuran('');
-    setCustomMutu('');
     setSelectedSlots([]);
-    setDragStart(null);
-    setClickStart(null);
-    setIsDragging(false);
     setEditingBookingId(null);
-    setOriginalSlots([]);       // ← tambah
-    setOriginalDateKey(null);   // ← tambah
-
-    setQtyByTest([{
-        merk: "",
-        tipe: "",
-        ukuran: "",
-        mutu: "",
-        Tarik: "",
-        Tekuk: "",
-      },
-    ]);
-
+    setOriginalSlots([]);
+    setOriginalDateKey(null);
+    setQtyByTest([{ merk: "", tipe: "", ukuran: "", mutu: "", Tarik: "", Tekuk: "" }]);
     setTotalForm(1);
   };
 
-
-  // Fetch DAFTAR SAMPEL MILIK USER SENDIRI (untuk daftar card di bawah)
   const fetchMySamples = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        console.warn('Token tidak ditemukan');
-        return;
-      }
-
+      if (!token) return;
       const res = await fetch(`${API_BASE}/api/bookings`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
           localStorage.removeItem('token');
@@ -362,7 +355,6 @@ function App() {
         }
         throw new Error('Gagal memuat daftar sampel');
       }
-
       const data = await res.json();
       setSamples(data);
     } catch (err) {
@@ -370,99 +362,53 @@ function App() {
     }
   };
 
-  // Fetch BOOKED SLOTS untuk TANGGAL TERTENTU (untuk scheduler)
   const fetchBookedSlotsForDate = async (dateKey) => {
     if (!dateKey) return;
-
     try {
       const res = await fetch(`${API_BASE}/api/bookings/slots/${dateKey}`);
       if (!res.ok) throw new Error('Gagal fetch booked slots');
-
       const { bookedSlots } = await res.json();
-
-      // Update state bookedSlotsByDate hanya untuk tanggal ini
-      setBookedSlotsByDate(prev => ({
-        ...prev,
-        [dateKey]: bookedSlots || [],
-      }));
+      setBookedSlotsByDate(prev => ({ ...prev, [dateKey]: bookedSlots || [] }));
     } catch (err) {
       console.error(`Gagal fetch booked slots untuk ${dateKey}:`, err);
     }
   };
 
-  // Panggil pertama kali saat app load
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
       setShowLoginPopup(false);
-      fetchMySamples();           // load daftar sampel pribadi
+      fetchMySamples();
     } else {
       setIsLoggedIn(false);
       setShowLoginPopup(true);
     }
   }, []);
 
-  // Saat user memilih tanggal di scheduler
   useEffect(() => {
-    if (selectedDate && !isNaN(selectedDate.getTime())) {  // cek apakah Date valid
+    if (selectedDate && !isNaN(selectedDate.getTime())) {
       const dateKey = selectedDate.toISOString().split('T')[0];
       fetchBookedSlotsForDate(dateKey);
-    } else {
-      console.warn('selectedDate invalid atau null, skip fetch booked slots');
     }
   }, [selectedDate]);
+
   const saveSample = async () => {
-    if (selectedSlots.length === 0) {
-      alert("Pilih jadwal waktu terlebih dahulu");
-      return;
-    }
-    if (!selectedDate) {
-      alert("Pilih tanggal pengujian terlebih dahulu");
-      return;
-    }
-
+    if (selectedSlots.length === 0) return alert("Pilih jadwal waktu terlebih dahulu");
+    if (!selectedDate) return alert("Pilih tanggal pengujian terlebih dahulu");
     const token = localStorage.getItem('token');
-    if (!token) {
-      alert("Silakan login terlebih dahulu");
-      return;
-    }
-
-    const required = getRequiredSlots();
-
-    if (selectedSlots.length !== required) {
-      if (selectedSlots.length > required) {
-        alert(`Anda hanya perlu ${required} slot untuk ${getTotalQty()} pengujian`);
-        setClickStart(null);
-        return;
-      }
-    }
-
-    const finalMerk = selectedMerk === 'Lainnya' ? customMerk : selectedMerk;
-    const finalUkuran = selectedUkuran === 'Lainnya' ? customUkuran : selectedUkuran;
-    const finalMutu = selectedMutu === 'Lainnya' ? customMutu : selectedMutu;
-
+    if (!token) return alert("Silakan login terlebih dahulu");
     const formattedDate = selectedDate.toLocaleDateString('id-ID', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
-
     const formattedJadwal = selectedSlots
       .sort((a, b) => a - b)
       .map(idx => getTimeFromIndex(idx))
       .join(', ');
-
     const dateKey = selectedDate.toISOString().split('T')[0];
-
     const payload = {
       kategori: TESTING_MASTER[selectedCat]?.label || 'Tidak diketahui',
       material: selectedMat?.label || 'Tidak diketahui',
-      merk: finalMerk || '-',
-      tipe: selectedTipe || '-',
-      ukuran: finalUkuran || '-',
-      mutu: finalMutu || '-',
       tests: qtyByTest,
       qty_sample: Number(qtySample) || 0,
       total_pengujian: Object.values(qtyByTest).reduce((sum, v) => sum + (Number(v) || 0), 0) + (Number(qtySample) || 0),
@@ -471,51 +417,29 @@ function App() {
       date_key: dateKey,
       selected_slots: selectedSlots
     };
-
     try {
       let response;
-      let result;
-
       if (editingBookingId) {
-        // MODE EDIT → PUT / PATCH
         response = await fetch(`${API_BASE}/api/bookings/${editingBookingId}`, {
-          method: 'PUT',           // atau 'PATCH' tergantung backend kamu
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       } else {
-        // MODE CREATE → POST
         response = await fetch(`${API_BASE}/api/bookings`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
       }
-
-      result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || `Gagal menyimpan (${response.status})`);
-      }
-
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || `Gagal menyimpan (${response.status})`);
       alert(editingBookingId ? 'Booking berhasil diupdate!' : 'Booking berhasil disimpan!');
-
-      // Reset form & mode edit
       closeForm();
       resetForm();
-      setEditingBookingId(null);   // ← penting, kembali ke mode create
-
-      // Refresh data
-      fetchMySamples();   // atau fetchMySamples() tergantung fungsi kamu
-
+      setEditingBookingId(null);
+      fetchMySamples();
     } catch (err) {
-      console.error(err);
       alert('Error: ' + err.message);
     }
   };
@@ -523,7 +447,7 @@ function App() {
   const getMaxSamplesPerSlot = () => {
     if (selectedCat === 'pengujian_baja') return 5;
     if (selectedCat === 'pengujian_beton') return 15;
-    return 5; // default safety
+    return 5;
   };
 
   const getRequiredSlots = () => {
@@ -536,21 +460,18 @@ function App() {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
     setShowLoginPopup(true);
-    setSamples([]);               // kosongkan daftar sampel
-    setBookedSlotsByDate({});     // kosongkan booked slots
+    setSamples([]);
+    setBookedSlotsByDate({});
     setEditingBookingId(null);
-    resetForm();                  // reset form kalau sedang terbuka
+    resetForm();
     alert('Anda telah logout.');
-    // Opsional: window.location.reload(); kalau ingin full refresh
   };
 
-  // Helper scheduler
   const startHour = 8;
   const endHour = 17;
   const interval = 15;
   const totalSlots = ((endHour - startHour) * 60) / interval;
-
-  const blockedSlots = []; // contoh slot yang diblokir
+  const blockedSlots = [];
 
   const getTimeFromIndex = (index) => {
     const totalMin = startHour * 60 + index * interval;
@@ -558,59 +479,35 @@ function App() {
     const m = totalMin % 60;
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
+
   useEffect(() => {
-    // Reset slot pilihan saat tanggal berubah
     setSelectedSlots([]);
   }, [selectedDate]);
 
   const isUnavailable = (index) => {
-    if (!selectedDate) return true;
-
-    if (!(selectedDate instanceof Date) || isNaN(selectedDate.getTime())) {
-      console.warn("selectedDate invalid:", selectedDate);
-      return true;
-    }
-
+    if (!selectedDate || isNaN(selectedDate.getTime())) return true;
     const dateKey = selectedDate.toISOString().split('T')[0];
     const bookedForThisDate = bookedSlotsByDate[dateKey] || [];
-
-    // Jika sedang edit DAN tanggal masih sama dengan tanggal asli booking
     if (editingBookingId && originalDateKey === dateKey) {
-      // Slot milik booking ini sendiri boleh dipilih (kecuali blocked)
       const isOwnSlot = originalSlots.includes(index);
       const isOtherBooked = bookedForThisDate.includes(index) && !isOwnSlot;
-
       return blockedSlots.includes(index) || isOtherBooked;
     }
-
-    // Mode normal (bukan edit) atau tanggal beda → semua booked dianggap unavailable
     return blockedSlots.includes(index) || bookedForThisDate.includes(index);
   };
 
   const handleClick = (index) => {
     if (isUnavailable(index)) return;
-
     setSelectedSlots((prevSlots) => {
-      // Jika sudah ada di selected → hapus (toggle off)
-      if (prevSlots.includes(index)) {
-        return prevSlots.filter((slot) => slot !== index);
-      }
-
-      // Jika belum ada → tambahkan (push)
+      if (prevSlots.includes(index)) return prevSlots.filter((slot) => slot !== index);
       const newSlots = [...prevSlots, index].sort((a, b) => a - b);
-
-      // Opsional: batasi agar tidak melebihi required (bisa dihapus kalau mau tombol simpan saja yang menolak)
       const required = getRequiredSlots();
       if (newSlots.length > required) {
         alert(`Maksimal ${required} slot untuk ${getTotalQty()} pengujian`);
-        return prevSlots; // tolak penambahan
+        return prevSlots;
       }
-
       return newSlots;
     });
-
-    // Reset clickStart karena sudah tidak pakai mode range klik lagi
-    setClickStart(null);
   };
 
   const selectCategory = (key) => {
@@ -624,581 +521,237 @@ function App() {
     setStep(2);
   };
 
-  const selectMerk = (merk) => {
-    setSelectedMerk(merk);
-    setStep(3);
-  };
-
   const handleEdit = (sample) => {
-    // Isi ulang form dengan data sample yang dipilih
-    setSelectedCat(sample.kategori === 'PENGUJIAN BAJA' ? 'pengujian_baja' : 'pengujian_beton');
-    // Cari material berdasarkan label (agak manual, bisa dioptimasi nanti)
     const cat = sample.kategori === 'PENGUJIAN BAJA' ? 'pengujian_baja' : 'pengujian_beton';
+    setSelectedCat(cat);
     const mat = TESTING_MASTER[cat].materials.find(m => m.label === sample.material);
     setSelectedMat(mat);
-
-    setSelectedMerk(sample.merk);
-    setSelectedTipe(sample.tipe);
-    setSelectedUkuran(sample.ukuran);
-    setSelectedMutu(sample.mutu);
     setQtyByTest(sample.tests || {});
-    setTotalForm(sample.tests.length)
+    setTotalForm(sample.tests.length);
     setQtySample(sample.qty_sample || 0);
     setEditingBookingId(sample.id);
     setOriginalSlots(sample.selected_slots || []);
     setOriginalDateKey(sample.date_key || null);
-
-    // Parse tanggal kembali ke Date object
     const [weekday, dayMonthYear] = sample.tanggal.split(', ');
-    const [day, monthYear] = dayMonthYear.split(' ');
-    const [month, year] = monthYear.split(' ');
-    const monthNum = new Date(Date.parse(month + " 1, " + year)).getMonth() + 1;
+    const [day, monthName, year] = dayMonthYear.split(' ');
+    const monthNum = new Date(Date.parse(monthName + " 1, " + year)).getMonth() + 1;
     const dateStr = `${year}-${monthNum.toString().padStart(2, '0')}-${day.padStart(2, '0')}`;
-    const parsedDate = new Date(dateStr);
-    setSelectedDate(parsedDate);
-
-    // Parse jadwal kembali ke selectedSlots (index)
+    setSelectedDate(new Date(dateStr));
     const times = sample.jadwal.split(', ');
     const slots = times.map(time => {
       const [start] = time.split('-');
       const [h, m] = start.split(':').map(Number);
-      const totalMin = (h - startHour) * 60 + m;
-      return totalMin / interval;
+      return ((h - startHour) * 60 + m) / interval;
     });
     setSelectedSlots(slots);
-
     openForm();
-    setStep(3); // langsung ke detail teknis untuk edit
+    setStep(3);
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Yakin ingin menghapus booking ini?")) return;
-
     try {
       const token = localStorage.getItem('token');
-
-      if (!token) {
-        alert('Anda harus login terlebih dahulu untuk menghapus booking.');
-        return;
-      }
+      if (!token) return alert('Anda harus login terlebih dahulu.');
       const res = await fetch(`${API_BASE}/api/bookings/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json', // optional tapi baik ada
-        },
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
-
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          // Token invalid/expired → logout otomatis
           localStorage.removeItem('token');
-          alert('Sesi login telah berakhir atau Anda tidak berhak menghapus booking ini. Silakan login kembali.');
-          // Opsional: redirect atau buka popup login
-          // setShowLoginPopup(true);
-          // setIsLoggedIn(false);
+          alert('Sesi login telah berakhir. Silakan login kembali.');
           return;
         }
-
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `Gagal menghapus (status ${res.status})`);
       }
-
       alert('Booking berhasil dihapus');
-      fetchMySamples(); // refresh daftar sampel & booked slots
+      fetchMySamples();
     } catch (err) {
-      console.error('Error menghapus booking:', err);
-      alert('Error menghapus: ' + (err.message || 'Terjadi kesalahan pada server'));
+      alert('Error menghapus: ' + err.message);
     }
   };
 
   return (
     <div className="app-container">
       {!isLoggedIn && showLoginPopup && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.6)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: 'white',
-            padding: '30px',
-            borderRadius: '12px',
-            width: '380px',
-            maxWidth: '90%',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
-          }}>
-            <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>
-              {registerMode ? 'Registrasi' : 'Login'}
-            </h2>
-
-            {errorMsg && (
-              <p style={{ color: 'red', textAlign: 'center', marginBottom: '15px' }}>{errorMsg}</p>
-            )}
-
+        <div className="auth-fixed-overlay">
+          <div className="auth-card-modal">
+            <h2 className="auth-title">{registerMode ? 'Registrasi' : 'Login'}</h2>
+            {errorMsg && <p className="auth-error-text">{errorMsg}</p>}
             <form onSubmit={handleAuth}>
-              <div style={{ marginBottom: '15px' }}>
+              <div className="auth-form-group">
                 <label>No HP</label>
-                <input
-                  type="tel"
-                  value={loginNoHp}
-                  onChange={(e) => setLoginNoHp(e.target.value)}
-                  placeholder="08123456789"
-                  style={{ width: '100%', padding: '10px', marginTop: '5px', borderRadius: '6px', border: '1px solid #ccc' }}
-                  required
-                />
+                <input type="tel" value={loginNoHp} onChange={(e) => setLoginNoHp(e.target.value)} placeholder="08123456789" className="auth-input" required />
               </div>
-
-              <div style={{ marginBottom: '15px' }}>
+              <div className="auth-form-group">
                 <label>Password</label>
-                <input
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="Minimal 6 karakter"
-                  style={{ width: '100%', padding: '10px', marginTop: '5px', borderRadius: '6px', border: '1px solid #ccc' }}
-                  required
-                />
+                <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="Minimal 6 karakter" className="auth-input" required />
               </div>
-
               {registerMode && (
-                <div style={{ marginBottom: '15px' }}>
+                <div className="auth-form-group">
                   <label>Nama</label>
-                  <input
-                    type="text"
-                    value={registerName}
-                    onChange={(e) => setRegisterName(e.target.value)}
-                    placeholder="Nama lengkap"
-                    style={{ width: '100%', padding: '10px', marginTop: '5px', borderRadius: '6px', border: '1px solid #ccc' }}
-                    required
-                  />
+                  <input type="text" value={registerName} onChange={(e) => setRegisterName(e.target.value)} placeholder="Nama lengkap" className="auth-input" required />
                 </div>
               )}
-
-              <button
-                type="submit"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: '#1976d2',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  marginTop: '5px'
-                }}
-              >
-                {registerMode ? 'Daftar' : 'Masuk'}
-              </button>
+              <button type="submit" className="auth-btn-main">{registerMode ? 'Daftar' : 'Masuk'}</button>
             </form>
-
-            <p style={{ textAlign: 'center', marginTop: '15px' }}>
+            <p className="auth-footer-text">
               {registerMode ? 'Sudah punya akun?' : 'Belum punya akun?'}
-              <button
-                onClick={() => {
-                  setRegisterMode(!registerMode);
-                  setErrorMsg('');
-                }}
-                style={{ background: 'none', border: 'none', color: '#1976d2', cursor: 'pointer', marginLeft: '5px' }}
-              >
-                {registerMode ? 'Login' : 'Daftar'}
-              </button>
+              <button onClick={() => { setRegisterMode(!registerMode); setErrorMsg(''); }} className="auth-btn-link">{registerMode ? 'Login' : 'Daftar'}</button>
             </p>
           </div>
         </div>
       )}
-
       {isLoggedIn && (
-        <div style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div style={{
-            background: '#2e7d32',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '6px'
-          }}>
-            Sudah Login
-          </div>
-
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: '8px 16px',
-              background: '#d32f2f',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            Logout
-          </button>
+        <div className="lab-user-nav">
+          <div className="lab-status-badge">Sudah Login</div>
+          <button onClick={handleLogout} className="lab-btn-logout">Logout</button>
         </div>
       )}
-      {/* Header */}
-      <div className="header" style={{ maxWidth: 'min(90vw, 800px)', margin: '0 auto' }}>
-        <input placeholder="Nama Proyek" />
-        <input placeholder="Nama Perusahaan" />
-        <input placeholder="Lokasi Proyek" />
-        <input placeholder="Kontak Person" />
+      
+      <div className="header lab-main-wrapper">
+        {/* Input fields Anda tetap sama */}
+        <input name="nama_proyek" value={headerData.nama_proyek} onChange={handleHeaderChange} className="lab-input" placeholder="Nama Proyek" />
+        <input name="nama_perusahaan" value={headerData.nama_perusahaan} onChange={handleHeaderChange} className="lab-input" placeholder="Nama Perusahaan" />
+        <input name="lokasi_proyek" value={headerData.lokasi_proyek} onChange={handleHeaderChange} className="lab-input" placeholder="Lokasi Proyek" />
+        <input name="kontak_person" value={headerData.kontak_person} onChange={handleHeaderChange} className="lab-input" placeholder="Kontak Person" />
+        
+        {/* Indikator Status yang sudah di-refactor */}
+        <div className="status-container">
+          <div className={`status-dot ${saveStatus}`} />
+          <small className="status-text">
+            {saveStatus === 'typing' && "Sedang mengetik..."}
+            {saveStatus === 'saving' && "Menyimpan perubahan..."}
+            {saveStatus === 'saved' && "Semua perubahan tersimpan"}
+            {saveStatus === 'error' && "Gagal menyimpan!"}
+          </small>
+        </div>
       </div>
-
-      <button
-        className="add-btn"
-        style={{
-          display: 'block',
-          width: '100%',
-          maxWidth: 'min(90vw, 800px)',
-          margin: '0 auto 20px'
-        }}
-        onClick={openForm}
-      >
-        + TAMBAH SAMPEL PENGUJIAN
-      </button>
-
-      {/* Daftar sampel */}
-      <div className="container" style={{ maxWidth: 'min(90vw, 800px)', margin: '0 auto' }}>
+      <button className="add-btn lab-btn-block lab-main-wrapper" onClick={openForm}>+ TAMBAH SAMPEL PENGUJIAN</button>
+      <div className="container lab-main-wrapper">
         {samples.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#64748b', fontStyle: 'italic' }}>
-            Belum ada sampel pengujian yang disimpan.
-          </p>
+          <p className="lab-empty-msg">Belum ada sampel pengujian yang disimpan.</p>
         ) : (
-          samples.map((s, idx) => {
-            // Skip kalau data tidak lengkap
-            if (!s || !s.material) return null;
-
-            return (
+          samples.map((s, idx) => (
+            s && s.material && (
               <div key={s.id || idx} className="sample-card">
                 <h4>{s.kategori || '-'} - {s.material}</h4>
-
-
-
-
-                <div class="table-container">
+                <div className="table-container">
                   <table>
                     <thead>
-                      <tr>
-                        <th>Merk</th>
-                        <th>Ukuran</th>
-                        <th>Mutu</th>
-                        <th>Pengujian</th>
-                      </tr>
+                      <tr><th>Merk</th><th>Ukuran</th><th>Mutu</th><th>Pengujian</th></tr>
                     </thead>
                     <tbody>
-
-
-                      {s.tests?.map((testItem, idx) => (
-                        <>
-
-
-                          {/* Tampilkan semua pengujian */}
-                          {Object.entries(testItem).filter(([testName]) => testName === "Tarik" || testName === "Tekuk" || testName === "Geser" || testName === "Sample").map(([testName, qty]) =>
-                            Number(qty) > 0 && (
-                              <>
-                                <tr>
-                                  <td>{testItem.merk === "Lainnya" ? testItem.merk_lainnya : testItem.merk}</td>
-                                  <td>{testItem.ukuran === "Lainnya" ? testItem.ukuran_lainnya : testItem.ukuran}</td>
-                                  <td>{testItem.mutu_FC_K ? `${testItem.mutu_FC_K} ${testItem.mutu}` : testItem.mutu}</td>
-                                  <td>→ {testName}: <strong>{qty}</strong> kali</td>
-                                </tr>
-                              </>
-                            )
-                          )}
-                        </>
+                      {s.tests?.map((testItem, tIdx) => (
+                        <React.Fragment key={tIdx}>
+                          {Object.entries(testItem)
+                            .filter(([testName]) => ["Tarik", "Tekuk", "Geser", "Sample"].includes(testName))
+                            .map(([testName, qty]) => Number(qty) > 0 && (
+                              <tr key={testName}>
+                                <td>{testItem.merk === "Lainnya" ? testItem.merk_lainnya : testItem.merk}</td>
+                                <td>{testItem.ukuran === "Lainnya" ? testItem.ukuran_lainnya : testItem.ukuran}</td>
+                                <td>{testItem.mutu === "Lainnya" ? mutu_lainnya :testItem.mutu_FC_K ? `${testItem.mutu_FC_K} ${testItem.mutu}` : testItem.mutu}</td>
+                                <td>→ {testName}: <strong>{qty}</strong> kali</td>
+                              </tr>
+                            ))}
+                        </React.Fragment>
                       ))}
-
-                      <tr class="total-row">
-                        <td colspan="3">Grand Total</td>
-                        <td class="text-center">{getTotalQty(s.tests)}</td>
-                      </tr>
+                      <tr className="total-row"><td colSpan="3">Grand Total</td><td className="text-center">{getTotalQty(s.tests)}</td></tr>
                     </tbody>
                   </table>
                 </div>
 
-
-
-                <div
-                  style={{
-                    fontSize: '13px',
-                    display: 'grid',
-                    gridTemplateColumns: '140px 1fr',
-                    gap: '5px',
-                    alignItems: 'baseline',
-                    marginTop: '8px'
-                  }}
-                >
-
-
-                  {/* {s.qty_sample > 0 && (
-                    <>
-                      <div style={{ fontWeight: 'bold' }}>Jumlah Sample (beton)</div>
-                      <div>{s.qty_sample} unit</div>
-                    </>
-                  )} */}
-
-                  {/* <div style={{ fontWeight: 'bold' }}>Total Pengujian</div>
-                  <div>{s.total_pengujian || 0} unit</div> */}
-
-                  <div style={{ fontWeight: 'bold' }}>Tanggal</div>
-                  <div>{s.tanggal || '-'}</div>
-
-                  <div style={{ fontWeight: 'bold' }}>Jadwal</div>
-                  <div>{s.jadwal || 'Tidak ada slot dipilih'}</div>
-
-                  {/* <div style={{ fontWeight: 'bold' }}>Dibuat</div>
-                  <div>{s.created_at || s.createdAt || '-'}</div> */}
+                <div className="lab-sample-details">
+                  <div className="lab-bold">Nama Proyek</div><div>{headerData.nama_proyek || '<Silakan Isi Header di Atas>'}</div>
+                  <div className="lab-bold">Nama Perusahaan</div><div>{headerData.nama_perusahaan || '<Silakan Isi Header di Atas>'}</div>
+                  <div className="lab-bold">Tanggal</div><div>{s.tanggal || '-'}</div>
+                  <div className="lab-bold">Jadwal</div><div>{s.jadwal || 'Tidak ada slot dipilih'}</div>
                 </div>
-
-                {/* Tombol Edit & Delete */}
-                <div style={{ marginTop: '12px', display: 'flex', gap: '10px' }}>
-                  <button
-                    onClick={() => handleEdit(s)}
-                    style={{
-                      padding: '6px 12px',
-                      background: '#1976d2',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(s.id)}
-                    style={{
-                      padding: '6px 12px',
-                      background: '#e53935',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Delete
-                  </button>
+                <div className="lab-action-group">
+                  <button onClick={() => handleEdit(s)} className="lab-btn-edit">Edit</button>
+                  <button onClick={() => handleDelete(s.id)} className="lab-btn-delete">Delete</button>
                 </div>
               </div>
-            );
-          })
+            )
+          ))
         )}
       </div>
-
-      {/* Overlay */}
-      <div
-        className="overlay"
-        style={{ display: isFormOpen ? 'block' : 'none' }}
-        onClick={closeForm}
-      />
-
-      {/* Bottom Sheet */}
+      <div className="overlay" style={{ display: isFormOpen ? 'block' : 'none' }} onClick={closeForm} />
       <div className={`card-form ${isFormOpen ? 'open' : ''}`}>
         {step === 0 && (
           <>
             <span className="grid-label">1. Pilih Kelompok Pengujian</span>
             <div className="image-grid">
               {Object.keys(TESTING_MASTER).map(key => (
-                <div
-                  key={key}
-                  className={`image-card ${selectedCat === key ? 'active' : ''}`}
-                  onClick={() => selectCategory(key)}
-                >
+                <div key={key} className={`image-card ${selectedCat === key ? 'active' : ''}`} onClick={() => selectCategory(key)}>
                   <b>{TESTING_MASTER[key].label}</b>
                 </div>
               ))}
             </div>
           </>
         )}
-
         {step === 1 && (
           <>
             <span className="grid-label">2. Pilih Jenis Material</span>
             <div className="image-grid" id="render-material">
               {TESTING_MASTER[selectedCat]?.materials.map(mat => (
-                <div
-                  key={mat.id}
-                  className={`image-card ${selectedMat?.id === mat.id ? 'active' : ''}`}
-                  onClick={() => selectMaterial(mat)}
-                >
+                <div key={mat.id} className={`image-card ${selectedMat?.id === mat.id ? 'active' : ''}`} onClick={() => selectMaterial(mat)}>
                   <img src={mat.img} alt={mat.label} />
                   <span>{mat.label}</span>
                 </div>
               ))}
             </div>
-            <div className="form-nav">
-              <button onClick={() => setStep(0)}>Kembali</button>
-            </div>
+            <div className="form-nav"><button onClick={() => setStep(0)}>Kembali</button></div>
           </>
         )}
-
         {(step === 3 || step === 2) && selectedMat && (
           <div>
             {Array(totalForm).fill(null).map((_, i) => (
-              <>
+              <React.Fragment key={i}>
                 <h3 className="detail-title">Detail Teknis Sampel {i + 1}</h3>
-                {/* 1. PILIH MERK */}
                 <div className="form-group">
-                  <label>
-                    Pilih {selectedCat === 'pengujian_beton' ? 'Plant' : 'Merek'}
-                  </label>
-
-                  <select
-                    className="detail-select"
-                    value={qtyByTest[i]["merk"]}
-                    onChange={(e) => {
-                      updateByIndex(i, "merk", e.target.value)
-                    }}
-                  >
+                  <label>Pilih {selectedCat === 'pengujian_beton' ? 'Plant' : 'Merek'}</label>
+                  <select className="detail-select" value={qtyByTest[i]["merk"]} onChange={(e) => updateByIndex(i, "merk", e.target.value)}>
                     <option value="">Pilih {selectedCat === 'pengujian_beton' ? 'Plant' : 'Merek'}</option>
-                    {selectedMat.brands.map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
+                    {selectedMat.brands.map((size) => <option key={size} value={size}>{size}</option>)}
                   </select>
-
-                  {qtyByTest[i]["merk"] === "Lainnya" && (
-                    <input
-                      type="text"
-                      className="detail-input"
-                      style={{ marginTop: '5px' }}
-                      placeholder="Masukkan Merk"
-                      value={qtyByTest[i]["merk_lainnya"]}
-                      onChange={(e) => {
-                        updateByIndex(i, "merk_lainnya", e.target.value)
-                      }}
-                    />
-                  )}
-
+                  {qtyByTest[i]["merk"] === "Lainnya" && <input type="text" className="detail-input sheet-mt-5" placeholder="Masukkan Merk" value={qtyByTest[i]["merk_lainnya"]} onChange={(e) => updateByIndex(i, "merk_lainnya", e.target.value)} />}
                 </div>
-
-                {/* 1. TIPE KHUSUS REINFORCEMENT BAR */}
                 {selectedMat.id === "reinforcement_bar" && (
                   <div className="form-group">
                     <label>Jenis Tulangan</label>
                     <div className="type-options">
-                      <button
-                        type="button"
-                        className={`type-btn ${qtyByTest[i]["tipe"] === "Polos" ? "active" : ""}`}
-                        onClick={() => {
-                          setSelectedTipe("Polos");
-                          setSelectedUkuran("");
-                          updateByIndex(i, "tipe", "Polos")
-                        }}
-                      >
-                        Polos
-                      </button>
-                      <button
-                        type="button"
-                        className={`type-btn ${qtyByTest[i]["tipe"] === "Sirip/Ulir" ? "active" : ""}`}
-                        onClick={() => {
-                          setSelectedTipe("Sirip/Ulir");
-                          setSelectedUkuran("");
-                          updateByIndex(i, "tipe", "Sirip/Ulir")
-                        }}
-                      >
-                        Sirip / Ulir
-                      </button>
+                      <button type="button" className={`type-btn ${qtyByTest[i]["tipe"] === "Polos" ? "active" : ""}`} onClick={() => updateByIndex(i, "tipe", "Polos")}>Polos</button>
+                      <button type="button" className={`type-btn ${qtyByTest[i]["tipe"] === "Sirip/Ulir" ? "active" : ""}`} onClick={() => updateByIndex(i, "tipe", "Sirip/Ulir")}>Sirip / Ulir</button>
                     </div>
                   </div>
                 )}
-
-                {/* 2. UKURAN */}
                 {selectedMat.ukuran && (
                   <div className="form-group">
                     <label>{selectedMat.ukuran_type || "Ukuran / Diameter / Tebal"}</label>
-
                     {selectedMat.id === "reinforcement_bar" ? (
-                      // Khusus reinforcement_bar: pakai diameter_polos/ulir
-                      <>
-                        {qtyByTest[i]["tipe"] ? (
-                          <>
-                            <select
-                              className="detail-select"
-                              value={qtyByTest[i]["ukuran"]}
-                              onChange={(e) => updateByIndex(i, "ukuran", e.target.value)}
-                            >
-                              <option value="">Pilih Diameter</option>
-                              {(qtyByTest[i]["tipe"] === "Polos"
-                                ? selectedMat.ukuran.diameter_polos || []
-                                : selectedMat.ukuran.diameter_ulir || []
-                              ).map((size) => (
-                                <option key={size} value={size}>
-                                  {size} mm
-                                </option>
-                              ))}
-                              <option value="Lainnya">Lainnya</option>
-                            </select>
-
-                            {qtyByTest[i]["ukuran"] === "Lainnya" && (
-                              <input
-                                type="text"
-                                className="detail-input"
-                                style={{ marginTop: '5px' }}
-                                placeholder="Masukkan Ukuran"
-                                value={qtyByTest[i]["ukuran_lainnya"]}
-                                onChange={(e) => updateByIndex(i, "ukuran_lainnya", e.target.value)}
-                              />
-                            )}
-                          </>
-                        ) : (
-                          <p style={{ color: '#e53935', fontSize: '14px', marginTop: '8px' }}>
-                            Pilih jenis tulangan terlebih dahulu (Polos / Sirip / Ulir)
-                          </p>
-                        )}
-                      </>
+                      qtyByTest[i]["tipe"] ? (
+                        <>
+                          <select className="detail-select" value={qtyByTest[i]["ukuran"]} onChange={(e) => updateByIndex(i, "ukuran", e.target.value)}>
+                            <option value="">Pilih Diameter</option>
+                            {(qtyByTest[i]["tipe"] === "Polos" ? selectedMat.ukuran.diameter_polos : selectedMat.ukuran.diameter_ulir).map((size) => <option key={size} value={size}>{size} mm</option>)}
+                            <option value="Lainnya">Lainnya</option>
+                          </select>
+                          {qtyByTest[i]["ukuran"] === "Lainnya" && <input type="text" className="detail-input sheet-mt-5" placeholder="Masukkan Ukuran" value={qtyByTest[i]["ukuran_lainnya"]} onChange={(e) => updateByIndex(i, "ukuran_lainnya", e.target.value)} />}
+                        </>
+                      ) : <p className="sheet-error-msg">Pilih jenis tulangan terlebih dahulu</p>
                     ) : (
-                      // Material LAIN: ukuran pasti array → aman dipanggil .map()
-                      <>
-                        <select
-                          className="detail-select"
-                          value={qtyByTest[i]["ukuran"]}
-                          onChange={(e) => updateByIndex(i, "ukuran", e.target.value)}
-                        >
-                          <option value="">Pilih {selectedMat.ukuran_type?.toLowerCase() || "ukuran"}</option>
-                          {Array.isArray(selectedMat.ukuran) ? (
-                            selectedMat.ukuran.map((size) => (
-                              <option key={size} value={size}>
-                                {size}
-                                {size !== "Lainnya" && selectedMat.ukuran_type?.includes("mm") ? " mm" : ""}
-                              </option>
-                            ))
-                          ) : (
-                            <option disabled>Tidak ada data ukuran</option>
-                          )}
-                        </select>
-
-                        {selectedUkuran === "Lainnya" && (
-                          <input
-                            type="text"
-                            className="detail-input"
-                            style={{ marginTop: '5px' }}
-                            placeholder="Masukkan ukuran manual"
-                            value={customUkuran}
-                            onChange={(e) => setCustomUkuran(e.target.value.trim())}
-                          />
-                        )}
-                      </>
+                      <select className="detail-select" value={qtyByTest[i]["ukuran"]} onChange={(e) => updateByIndex(i, "ukuran", e.target.value)}>
+                        <option value="">Pilih {selectedMat.ukuran_type?.toLowerCase() || "ukuran"}</option>
+                        {Array.isArray(selectedMat.ukuran) && selectedMat.ukuran.map((size) => <option key={size} value={size}>{size}</option>)}
+                      </select>
                     )}
                   </div>
                 )}
-
-                {/* 3. MUTU */}
                 <div className="form-group">
                   <label>Mutu Material</label>
-
                   {selectedMat.mutu && selectedMat.mutu.length > 0 ? (
                     <select
                       className="detail-select"
@@ -1207,312 +760,118 @@ function App() {
                     >
                       <option value="">Pilih Mutu</option>
                       {selectedMat.mutu.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
-                        </option>
+                        <option key={m} value={m}>{m}</option>
                       ))}
                     </select>
                   ) : (
                     <>
                       {selectedCat === "pengujian_beton" && (
-                          <>
-                            <div className="type-options">
-                              <button
-                                type="button"
-                                className={`type-btn ${qtyByTest[i]["mutu_FC_K"] === "FC" ? "active" : ""}`}
-                                onClick={() => {
-                                  updateByIndex(i, "mutu_FC_K", "FC")
-                                }}
-                              >
-                                FC
-                              </button>
-                              <button
-                                type="button"
-                                className={`type-btn ${qtyByTest[i]["mutu_FC_K"] === "K" ? "active" : ""}`}
-                                onClick={() => {
-                                  updateByIndex(i, "mutu_FC_K", "K")
-                                }}
-                              >
-                                K
-                              </button>
-                            </div>
-                            {qtyByTest[i]["mutu_FC_K"] && (
-                              <input
-                                type="text"
-                                className="detail-input"
-                                style={{ marginTop: '5px' }}
-                                placeholder="Masukkan mutu secara manual"
-                                value={qtyByTest[i]["mutu"]}
-                                onChange={(e) => updateByIndex(i, "mutu", e.target.value)}
-                              />
-                            )}
-                          </>
+                        <>
+                          <div className="type-options">
+                            <button
+                              type="button"
+                              className={`type-btn ${qtyByTest[i]["mutu_FC_K"] === "FC" ? "active" : ""}`}
+                              onClick={() => updateByIndex(i, "mutu_FC_K", "FC")}
+                            >FC</button>
+                            <button
+                              type="button"
+                              className={`type-btn ${qtyByTest[i]["mutu_FC_K"] === "K" ? "active" : ""}`}
+                              onClick={() => updateByIndex(i, "mutu_FC_K", "K")}
+                            >K</button>
+                          </div>
+                          {qtyByTest[i]["mutu_FC_K"] && (
+                            <input
+                              type="text"
+                              className="detail-input"
+                              style={{ marginTop: '5px' }}
+                              placeholder="Masukkan mutu secara manual"
+                              value={qtyByTest[i]["mutu"]}
+                              onChange={(e) => updateByIndex(i, "mutu", e.target.value)}
+                            />
+                          )}
+                        </>
                       )}
-
-                      {selectedMutu === "Lainnya" && selectedCat !== "pengujian_beton" && (
+                      {qtyByTest[i]["mutu"] === "Lainnya" && selectedCat !== "pengujian_beton" && (
                         <input
                           type="text"
                           className="detail-input"
                           style={{ marginTop: '5px' }}
                           placeholder="Masukkan mutu secara manual"
-                          value={customMutu}
-                          onChange={(e) => setCustomMutu(e.target.value.trim())}
+                          value={qtyByTest[i]["mutu_lainnya"]}
+                          onChange={(e) => updateByIndex(i, "mutu_lainnya", e.target.value)}
                         />
                       )}
                     </>
                   )}
-
-
                 </div>
-
-                {/* 4. Jumlah Pengujian */}
                 {selectedMat.tests?.length > 0 && (
                   <div className="form-group">
                     <label>Jumlah Pengujian</label>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className="flex-column">
                       {selectedMat.tests.map((test) => (
-                        <div className="test-row">
+                        <div className="test-row" key={test}>
                           <span className="test-name">{test}</span>
-                          <input
-                            type="number"
-                            min="0"
-                            className="detail-input test-qty"
-                            value={qtyByTest[i][test]}
-                            onChange={(e) => updateByIndex(i, test, e.target.value)}
-                            placeholder="0"
-                          />
+                          <input type="number" className="detail-input test-qty" value={qtyByTest[i][test]} onChange={(e) => updateByIndex(i, test, e.target.value)} placeholder="0" />
                           <span className="test-unit">buah</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-
-                {/* 5. Jumlah Sample beton */}
-                {/* {selectedCat === "pengujian_beton" && (
-                  <div className="form-group">
-                    <label>Jumlah Sample</label>
-                    <input
-                      type="number"
-                      min="1"
-                      className="detail-input"
-                      style={{ maxWidth: '240px' }}
-                      value={qtySample}
-                      onChange={(e) => setQtySample(e.target.value)}
-                      placeholder="Contoh: 12 sample"
-                    />
-                  </div>
-                )} */}
-              </>
-
+              </React.Fragment>
             ))}
-
-            {/* Navigasi */}
             <div className="form-nav step3">
-              <button className="btn-back" onClick={() => setStep(1)}>
-                Kembali
-              </button>
-              <button className="btn-back" onClick={() => {
-                console.log(qtyByTest)
-                setQtyByTest((prev) => [
-                  ...prev,
-                  {
-                    merk: "",           // default kosong
-                    tipe: "",
-                  },
-                ]);
-                setTotalForm(totalForm + 1)
-              }}>
-                Add
-              </button>
-              <button
-                className="btn-next"
-                onClick={() => { setStep(4) }}
-              >
-                Lanjut ke Jadwal
-              </button>
+              <button className="btn-back" onClick={() => setStep(1)}>Kembali</button>
+              <button className="btn-back" onClick={() => { setQtyByTest((prev) => [...prev, { merk: "", tipe: "" }]); setTotalForm(totalForm + 1); }}>Add</button>
+              <button className="btn-next" onClick={() => setStep(4)}>Lanjut ke Jadwal</button>
             </div>
           </div>
         )}
         {step === 4 && (
           <>
             <span className="grid-label">4. Booking Waktu Pengujian</span>
-
-            {/* Pilih Tanggal */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '15px',
-                fontWeight: '700',
-                color: '#2c3e50',
-                marginBottom: '12px',
-                paddingLeft: '10px',
-                borderLeft: '4px solid var(--primary)'
-              }}>
-                Pilih Tanggal Pengujian
-              </label>
-
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '10px',
-                justifyContent: 'center'
-              }}>
+            <div className="sheet-mb-24">
+              <label className="sheet-date-label">Pilih Tanggal Pengujian</label>
+              <div className="sheet-date-container">
                 {Array.from({ length: 14 }, (_, i) => {
-                  const date = new Date();
-                  date.setDate(date.getDate() + i);
+                  const date = new Date(); date.setDate(date.getDate() + i);
                   const isSelected = selectedDate && selectedDate.toDateString() === date.toDateString();
                   const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                   const dateKey = date.toISOString().split('T')[0];
                   const hasBooking = bookedSlotsByDate[dateKey]?.length > 0;
-
                   return (
-                    <button
-                      key={i}
-                      style={{
-                        minWidth: '80px',
-                        padding: '12px 8px',
-                        border: isSelected ? `2px solid var(--primary)` : '1px solid #d1d5db',
-                        borderRadius: '10px',
-                        background: isSelected
-                          ? 'var(--primary)'
-                          : hasBooking
-                            ? '#e8f5e9'  // hijau muda jika ada booking
-                            : isWeekend ? '#fff3e0' : 'white',
-                        color: isSelected ? 'white' : '#333',
-                        fontWeight: isSelected || hasBooking ? 'bold' : 'normal',
-                        cursor: 'pointer',
-                        position: 'relative'
-                      }}
-                      onClick={() => setSelectedDate(date)}
-                    >
+                    <button key={i} className={`sheet-date-btn ${isSelected ? 'selected' : ''} ${hasBooking && !isSelected ? 'has-booking' : ''} ${isWeekend && !isSelected ? 'weekend' : ''}`} onClick={() => setSelectedDate(date)}>
                       {date.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}
-                      {isWeekend && <small style={{ display: 'block', fontSize: '11px' }}>(x2)</small>}
-                      {hasBooking && (
-                        <small style={{
-                          position: 'absolute',
-                          top: '-6px',
-                          right: '-6px',
-                          background: 'var(--secondary)',
-                          color: 'white',
-                          borderRadius: '50%',
-                          width: '18px',
-                          height: '18px',
-                          fontSize: '10px',
-                          lineHeight: '18px',
-                          textAlign: 'center'
-                        }}>
-                          ✓
-                        </small>
-                      )}
+                      {isWeekend && <small className="block-text">(x2)</small>}
+                      {hasBooking && <small className="sheet-date-badge">✓</small>}
                     </button>
                   );
                 })}
               </div>
             </div>
-
-            {/* Scheduler slot waktu */}
-            <div className="scheduler" ref={schedulerRef} style={{ maxWidth: 'min(90vw, 900px)', margin: '24px auto' }}>
-              <div style={{
-                fontSize: '13px',
-                color: selectedSlots.length !== getRequiredSlots() ? '#e53935' : '#2e7d32',
-                margin: '12px 0',
-                textAlign: 'center',
-                padding: '10px',
-                background: selectedSlots.length !== getRequiredSlots() ? '#ffebee' : '#e8f5e9',
-                borderRadius: '8px'
-              }}>
-                * Untuk jadwal berwarna merah muda, harga menjadi x3. Pengujian besi
-                <br />
-                {selectedCat === 'pengujian_baja' ? (
-                  <>1 slot = maks. <strong>5 pengujian baja</strong></>
-                ) : (
-                  <>1 slot = maks. <strong>15 pengujian beton</strong></>
-                )}
-                <br />
-                Total pengujian: <strong>{getTotalQty()}</strong>
-                → Anda <strong>harus memilih tepat {getRequiredSlots()} slot</strong>
-                {selectedSlots.length > 0 && (
-                  <> • Saat ini: {selectedSlots.length} slot</>
-                )}
+            <div className="scheduler sheet-scheduler-wrapper" ref={schedulerRef}>
+              <div className={`sheet-scheduler-info ${selectedSlots.length !== getRequiredSlots() ? 'sheet-info-invalid' : 'sheet-info-valid'}`}>
+                * Untuk jadwal berwarna merah muda, harga menjadi x3.<br />
+                {selectedCat === 'pengujian_baja' ? <>1 slot = maks. <strong>5 pengujian baja</strong></> : <>1 slot = maks. <strong>15 pengujian beton</strong></>}<br />
+                Total pengujian: <strong>{getTotalQty()}</strong> → Anda <strong>harus memilih tepat {getRequiredSlots()} slot</strong>
               </div>
-              <div
-                className="grid"
-              // onMouseLeave={endDrag}
-              // onMouseUp={endDrag}
-              >
+              <div className="grid">
                 {Array.from({ length: totalSlots }).map((_, i) => {
                   const time = getTimeFromIndex(i);
-                  const isBlocked = blockedSlots.includes(i);
-
-                  // Gunakan isUnavailable untuk cek unavailable umum
                   const unavailable = isUnavailable(i);
-
-                  // Cek apakah ini slot milik sendiri (khusus edit)
-                  const isOwnSlot = editingBookingId &&
-                    selectedDate &&
-                    !isNaN(selectedDate.getTime()) &&                  // ← tambah ini (pastikan valid Date)
-                    originalDateKey === selectedDate.toISOString().split('T')[0] &&
-                    originalSlots.includes(i);
-
-                  // Tentukan class utama
-                  let className = "slot";
-
-                  if (isBlocked) {
-                    className += " blocked";
-                  } else if (isOwnSlot) {
-                    if (selectedSlots.includes(i)) {
-                      className += " selected";
-                    } else {
-                      className += " own-booked";           // hijau untuk milik sendiri
-                    }
-                  } else if (unavailable) {
-                    className += " booked";               // merah untuk booked orang lain
-                  } else if (selectedSlots.includes(i)) {
-                    className += " selected";             // biru untuk yang dipilih
-                  }
-
-                  return (
-                    <div
-                      key={i}
-                      className={className}
-                      title={
-                        isBlocked ? "Slot diblokir (libur/maintenance)" :
-                          isOwnSlot ? "Slot ini milik booking Anda saat ini" :
-                            unavailable ? "Slot sudah dibooking orang lain" : ""
-                      }
-                      // onMouseDown={() => startDrag(i)}
-                      // onMouseOver={() => dragOver(i)}
-                      onClick={() => handleClick(i)}
-                    >
-                      {time}
-                    </div>
-                  );
+                  const isOwnSlot = editingBookingId && selectedDate && !isNaN(selectedDate.getTime()) && originalDateKey === selectedDate.toISOString().split('T')[0] && originalSlots.includes(i);
+                  let slotClass = "slot";
+                  if (blockedSlots.includes(i)) slotClass += " blocked";
+                  else if (isOwnSlot) slotClass += selectedSlots.includes(i) ? " selected" : " own-booked";
+                  else if (unavailable) slotClass += " booked";
+                  else if (selectedSlots.includes(i)) slotClass += " selected";
+                  return <div key={i} className={slotClass} onClick={() => handleClick(i)}>{time}</div>;
                 })}
               </div>
             </div>
-
             <div className="form-nav step3">
-              <button className="btn-back" onClick={() => setStep(3)}>
-                Kembali
-              </button>
-              <button
-                className="btn-next"
-                onClick={saveSample}
-                disabled={
-                  !selectedDate ||
-                  selectedSlots.length === 0 ||
-                  selectedSlots.length !== getRequiredSlots()   // ← harus sama dengan jumlah slot yang dibutuhkan
-                }
-                style={{
-                  background:
-                    selectedSlots.length === getRequiredSlots() && selectedDate
-                      ? 'var(--secondary)'
-                      : '#94a3b8'
-                }}
-              >
-                Simpan Sampel
-              </button>
+              <button className="btn-back" onClick={() => setStep(3)}>Kembali</button>
+              <button className={`btn-next sheet-btn-save ${(!selectedDate || selectedSlots.length !== getRequiredSlots()) ? 'sheet-btn-disabled' : 'sheet-btn-active'}`} onClick={saveSample} disabled={!selectedDate || selectedSlots.length !== getRequiredSlots()}>Simpan Sampel</button>
             </div>
           </>
         )}

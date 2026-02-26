@@ -501,3 +501,330 @@
       background: #eff6ff;
       color: #1d4ed8;
     }
+
+    
+
+
+    .auth-fixed-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.auth-card-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 380px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.auth-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-error-text {
+  color: red;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.auth-form-group {
+  margin-bottom: 15px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box; /* ditambahkan agar padding tidak merusak lebar */
+}
+
+.auth-btn-main {
+  width: 100%;
+  padding: 12px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.auth-footer-text {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.auth-btn-link {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+
+/* Container umum untuk pembatasan lebar */
+.lab-main-wrapper {
+  max-width: min(90vw, 800px);
+  margin: 0 auto;
+}
+
+/* Status Login & Logout */
+.lab-user-nav {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lab-status-badge {
+  background: #2e7d32;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+.lab-btn-logout {
+  padding: 8px 16px;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Tombol Tambah Sampel */
+.lab-btn-block {
+  display: block;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Pesan Kosong */
+.lab-empty-msg {
+  text-align: center;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Detail Sampel (Grid) */
+.lab-sample-details {
+  font-size: 13px;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 5px;
+  align-items: baseline;
+  margin-top: 8px;
+}
+
+.lab-bold {
+  font-weight: bold;
+}
+
+/* Action Buttons (Edit & Delete) */
+.lab-action-group {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.lab-btn-edit {
+  padding: 6px 12px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.lab-btn-delete {
+  padding: 6px 12px;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Overlay & Container */
+.sheet-overlay {
+  background: rgba(0,0,0,0.5); /* Asumsi overlay standar */
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+/* Form Helper & Utility */
+.sheet-mt-5 { margin-top: 5px; }
+.sheet-mt-8 { margin-top: 8px; }
+.sheet-mb-24 { margin-bottom: 24px; }
+
+.sheet-error-msg {
+  color: #e53935;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* Booking - Date Selection */
+.sheet-date-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  padding-left: 10px;
+  border-left: 4px solid var(--primary);
+}
+
+.sheet-date-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.sheet-date-btn {
+  min-width: 80px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #333;
+}
+
+.sheet-date-btn.selected {
+  border: 2px solid var(--primary);
+  background: var(--primary);
+  color: white;
+  font-weight: bold;
+}
+
+.sheet-date-btn.has-booking {
+  background: #e8f5e9;
+  font-weight: bold;
+}
+
+.sheet-date-btn.weekend {
+  background: #fff3e0;
+}
+
+.sheet-date-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--secondary);
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* Scheduler - Info Box */
+.sheet-scheduler-info {
+  font-size: 13px;
+  margin: 12px 0;
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.sheet-info-invalid {
+  color: #e53935;
+  background: #ffebee;
+}
+
+.sheet-info-valid {
+  color: #2e7d32;
+  background: #e8f5e9;
+}
+
+/* Scheduler - Main Layout */
+.sheet-scheduler-wrapper {
+  max-width: min(90vw, 900px);
+  margin: 24px auto;
+}
+
+/* Buttons */
+.sheet-btn-save {
+  transition: background 0.3s;
+}
+
+.sheet-btn-disabled {
+  background: #94a3b8 !important;
+  cursor: not-allowed;
+}
+
+.sheet-btn-active {
+  background: var(--secondary) !important;
+}
+
+/* Container Status */
+.status-container {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+/* Titik Indikator */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+/* Teks Status */
+.status-text {
+  color: #ffffff;
+  font-size: 11px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* Variasi Status */
+.status-dot.typing {
+  background-color: #fb8c00; /* Oranye */
+}
+
+.status-dot.saving {
+  background-color: #ffffff; /* Putih */
+  box-shadow: 0 0 8px #ffffff;
+  animation: status-pulse 1s infinite;
+}
+
+.status-dot.saved {
+  background-color: #4caf50; /* Hijau */
+}
+
+.status-dot.error {
+  background-color: #ff5252; /* Merah */
+}
+
+/* Animasi Pulse */
+@keyframes status-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
