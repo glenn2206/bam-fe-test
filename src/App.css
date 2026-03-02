@@ -828,3 +828,85 @@
   50% { opacity: 0.4; transform: scale(1.1); }
   100% { opacity: 1; transform: scale(1); }
 }
+
+
+/* Container Utama Popup */
+.wa-popup-bar {
+  position: fixed;
+  bottom: -100px; /* Sembunyi di bawah layar */
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+  padding: 15px 20px;
+  z-index: 800;
+  transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-top: 3px solid #25D366;
+}
+
+/* Munculkan saat ada data */
+.wa-popup-bar.show {
+  bottom: 0;
+}
+
+.wa-popup-content {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wa-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wa-count {
+  background: #25D366;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.wa-text strong {
+  display: block;
+  font-size: 14px;
+  color: #333;
+}
+
+.wa-text small {
+  color: #777;
+  font-size: 12px;
+}
+
+.wa-send-btn {
+  background: #25D366;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+
+.wa-send-btn:hover {
+  transform: scale(1.05);
+  background: #20ba5a;
+}
+
+/* Berikan padding bawah pada body agar konten tidak tertutup popup */
+body {
+  padding-bottom: 80px; 
+}

@@ -638,6 +638,65 @@ useEffect(() => {
     }
   };
 
+
+const handleKirimSemuaWA = () => {
+  if (samples.length === 0) return;
+  
+  const adminNumber = "6282245556683"; // Nomor Admin Lab BAM
+
+  // --- HEADER PESAN ---
+  let message = `*📦 BOOKING PENGUJIAN LABORATORIUM*\n`;
+  message += `*PT BINTANG ABESTATON MAHESA*\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+  
+  message += `*📍 DATA PROYEK*\n`;
+  message += `• *Nama Proyek:* ${headerData.nama_proyek || '-'}\n`;
+  message += `• *Perusahaan:* ${headerData.nama_perusahaan || '-'}\n`;
+  message += `• *Lokasi:* ${headerData.lokasi_proyek || '-'}\n`;
+  message += `• *Kontak:* ${headerData.kontak_person || '-'}\n\n`;
+
+  message += `*🧪 DAFTAR SAMPEL (${samples.length} Item)*\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+  // --- LOOPING TIAP SAMPEL ---
+  samples.forEach((s, index) => {
+    message += `*${index + 1}. ${s.kategori}*\n`;
+    message += `   🔹 *Material:* ${s.material}\n`;
+    message += `   📅 *Tanggal:* ${s.tanggal}\n`;
+    message += `   ⏰ *Jadwal:* ${s.jadwal}\n`;
+    message += `   ───────────────\n`;
+
+    s.tests.forEach((test) => {
+      const merk = test.merk === "Lainnya" ? test.merk_lainnya : test.merk;
+      const uk = test.ukuran === "Lainnya" ? test.ukuran_lainnya : test.ukuran;
+      const tipe = test.tipe ? ` (${test.tipe})` : '';
+      
+      // Format Mutu (Beton/Baja)
+      const mutuDisplay = test.mutu_FC_K ? `${test.mutu_FC_K} ${test.mutu}` : test.mutu;
+
+      message += `   • *${merk}*${tipe}\n`;
+      message += `     Dimensi: ${uk} | Mutu: ${mutuDisplay}\n`;
+      
+      // Detail Jenis Uji (Hanya yang diisi > 0)
+      const activeTests = Object.entries(test)
+        .filter(([key, val]) => ["Tarik", "Tekuk", "Geser", "Sample"].includes(key) && Number(val) > 0);
+      
+      activeTests.forEach(([name, qty]) => {
+        message += `     └─ ✅ Uji ${name}: *${qty}* bh\n`;
+      });
+    });
+    message += `\n`; 
+  });
+
+  // --- FOOTER ---
+  message += `━━━━━━━━━━━━━━━━━━━━\n`;
+  message += `_Mohon konfirmasi ketersediaan slot tersebut. Terima kasih._\n`;
+  message += `*Sistem Booking BAM Lab*`;
+
+  const encoded = encodeURIComponent(message);
+  window.open(`https://wa.me/${adminNumber}?text=${encoded}`, '_blank');
+};
+
   return (
     <div className="app-container">
       {!isLoggedIn && showLoginPopup && (
@@ -953,6 +1012,24 @@ useEffect(() => {
             </div>
           </>
         )}
+      </div>
+            {/* Popup WhatsApp Bottom Bar */}
+      <div className={`wa-popup-bar ${samples.length > 0 ? 'show' : ''}`}>
+        <div className="wa-popup-content">
+          <div className="wa-info">
+            <span className="wa-count">{samples.length}</span>
+            <div className="wa-text">
+              <strong>Sampel Siap Dikirim</strong>
+              <small>Klik untuk kirim rekap ke Admin Lab</small>
+            </div>
+          </div>
+          <button className="wa-send-btn" onClick={handleKirimSemuaWA}>
+            Kirim WhatsApp
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93a7.898 7.898 0 0 0-2.327-5.607z"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
