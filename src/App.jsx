@@ -1,5 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
+import AsiaSteel from './assets/BAJA/Asia Steel.png';
+import BPS from './assets/BAJA/BPS.png';
+import CitraBaruSteel from './assets/BAJA/Citra Baru Steel.png';
+import DelcoPrima from './assets/BAJA/Delco Prima.png';
+import DELI from './assets/BAJA/DELI.png';
+import InterworldSteel from './assets/BAJA/Interworld Steel.png';
+import JayaAbadiSteel from './assets/BAJA/Jaya Abadi Steel.png';
+import KrakatauOsakaSteel from './assets/BAJA/Krakatau Osaka Steel.png';
+import KrakatauSteel from './assets/BAJA/Krakatau Steel.png';
+import LautanSteel from './assets/BAJA/Lautan Steel.png';
+import Lionmesh from './assets/BAJA/Lionmesh.png';
+import MasterSteel from './assets/BAJA/Master Steel.png';
+
+import Adhimix from './assets/BETON/Adhimix Rmc.png';
+import FarikaBeton from './assets/BETON/Farika Beton.png';
+import FreshBeton from './assets/BETON/Fresh Beton.png';
+import JayaBeton from './assets/BETON/Jaya Beton.png';
+import JayaMakmurBeton from './assets/BETON/Jaya Makmur Beton.png';
+import KaryaBeton from './assets/BETON/Karya Beton.png';
+import MerahPutihBeton from './assets/BETON/Merah Putih Beton.png';
+import MerakJayaBeton from './assets/BETON/Merak Jaya Beton.png';
+import Pionir from './assets/BETON/Pionir.png';
+import Sika from './assets/BETON/Sika.png';
+import SolusiBangun from './assets/BETON/Solusi Bangun Beton 2.png';
+import WikaBeton from './assets/BETON/Wijaya Karya Beton.png';
 
 const API_BASE = 'https://bam-be.onrender.com';
 const BETON_PLANT_BRANDS = ["Adhimix", "Merak Jaya Beton", "Bangun Rancang Indonesia Kita (Brik)", "Pionirbeton", "Farika Beton", "Scg Fresh Beton", "Sika", "Karya Beton", "Sudhira Solusi Bangun Beton", "Kbn Prima Beton", "Wika Beton", "Jayamix", "Holcim Beton", "Merah Putih Beton", "Lainnya"];
@@ -164,6 +189,42 @@ const TESTING_MASTER = {
       }
     ]
   }
+};
+const logoMapping = {
+  // --- Kategori BAJA / STEEL ---
+  "Asia Steel": AsiaSteel,
+  "Baja Perkasa Sentosa": BPS, // Mapping BPS ke nama lengkap di array
+  "Citra Baru Steel": CitraBaruSteel,
+  "Delco Prima": DelcoPrima,
+  "Deli": DELI,                // Mapping 'Deli' ke variabel DELI
+  "Interworld Steel": InterworldSteel,
+  "Jaya Abadi Steel": JayaAbadiSteel,
+  "Krakatau Osaka Steel": KrakatauOsakaSteel,
+  "Krakatau Steel": KrakatauSteel,
+  "Lautan Steel": LautanSteel,
+  "Lionmesh": Lionmesh,
+  "Master Steel": MasterSteel,
+
+  // --- FBI Variants (Baja) ---
+  "Master Steel - FBI": MasterSteel,
+  "Lautan Steel - FBI": LautanSteel,
+  "Interworld Steel - FBI": InterworldSteel,
+  "Deli - FBI": DELI,
+  "Krakatau Steel - FBI": KrakatauSteel,
+
+  // --- Kategori BETON (BETON_PLANT_BRANDS) ---
+  "Adhimix": Adhimix,
+  "Merak Jaya Beton": MerakJayaBeton,
+  "Pionirbeton": Pionir,        // Mapping 'Pionirbeton' ke Pionir.png
+  "Farika Beton": FarikaBeton,
+  "Scg Fresh Beton": FreshBeton, // Mapping 'Scg Fresh Beton' ke FreshBeton.png
+  "Sika": Sika,
+  "Karya Beton": KaryaBeton,
+  "Sudhira Solusi Bangun Beton": SolusiBangun, // Mapping nama panjang ke file Anda
+  "Wika Beton": WikaBeton,
+  "Merah Putih Beton": MerahPutihBeton,
+  "Jaya Beton": JayaBeton,
+  "Jaya Makmur Beton": JayaMakmurBeton,
 };
 
 function App() {
@@ -337,6 +398,10 @@ useEffect(() => {
     setOriginalSlots([]);
     setOriginalDateKey(null);
     setQtyByTest([{ merk: "", tipe: "", ukuran: "", mutu: "", Tarik: "", Tekuk: "" }]);
+    // setQtyByTest([{ merk: "", tipe: "", ukuran: "", mutu: "", 
+    //   perusahaan: {nama: "", lokasi: "", kontak: "", proyek: ""},
+    //   test: {Tarik: "", Tekuk: "", Geser: "", Sample: ""}
+    // }]);
     setTotalForm(1);
   };
 
@@ -545,7 +610,7 @@ useEffect(() => {
     });
     setSelectedSlots(slots);
     openForm();
-    setStep(3);
+    setStep(2);
   };
 
   const handleDelete = async (id) => {
@@ -641,7 +706,7 @@ useEffect(() => {
                 <div className="table-container">
                   <table>
                     <thead>
-                      <tr><th>Merk</th><th>Ukuran</th><th>Mutu</th><th>Pengujian</th></tr>
+                      <tr><th>Merk</th><th>Uk</th><th>Mutu</th><th>Pengujian</th></tr>
                     </thead>
                     <tbody>
                       {s.tests?.map((testItem, tIdx) => (
@@ -650,7 +715,20 @@ useEffect(() => {
                             .filter(([testName]) => ["Tarik", "Tekuk", "Geser", "Sample"].includes(testName))
                             .map(([testName, qty]) => Number(qty) > 0 && (
                               <tr key={testName}>
-                                <td>{testItem.merk === "Lainnya" ? testItem.merk_lainnya : testItem.merk}</td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    {logoMapping[testItem.merk] && (
+                                      <img 
+                                        src={logoMapping[testItem.merk]} 
+                                        alt={testItem.merk} 
+                                        style={{ width: '35px', height: '35px', objectFit: 'contain' }} 
+                                      />
+                                    )}
+                                    <span>
+                                      {testItem.merk === "Lainnya" ? testItem.merk_lainnya : testItem.merk}
+                                    </span>
+                                  </div>
+                                </td>
                                 <td>{testItem.ukuran === "Lainnya" ? testItem.ukuran_lainnya : testItem.ukuran}</td>
                                 <td>{testItem.mutu === "Lainnya" ? mutu_lainnya :testItem.mutu_FC_K ? `${testItem.mutu_FC_K} ${testItem.mutu}` : testItem.mutu}</td>
                                 <td>→ {testName}: <strong>{qty}</strong> kali</td>
@@ -706,7 +784,7 @@ useEffect(() => {
             <div className="form-nav"><button onClick={() => setStep(0)}>Kembali</button></div>
           </>
         )}
-        {(step === 3 || step === 2) && selectedMat && (
+        {(step === 2) && selectedMat && (
           <div>
             {Array(totalForm).fill(null).map((_, i) => (
               <React.Fragment key={i}>
@@ -823,13 +901,13 @@ useEffect(() => {
             <div className="form-nav step3">
               <button className="btn-back" onClick={() => setStep(1)}>Kembali</button>
               <button className="btn-back" onClick={() => { setQtyByTest((prev) => [...prev, { merk: "", tipe: "" }]); setTotalForm(totalForm + 1); }}>Add</button>
-              <button className="btn-next" onClick={() => setStep(4)}>Lanjut ke Jadwal</button>
+              <button className="btn-next" onClick={() => setStep(3)}>Lanjut ke Jadwal</button>
             </div>
           </div>
         )}
-        {step === 4 && (
+        {step === 3 && (
           <>
-            <span className="grid-label">4. Booking Waktu Pengujian</span>
+            <span className="grid-label">3. Booking Waktu Pengujian</span>
             <div className="sheet-mb-24">
               <label className="sheet-date-label">Pilih Tanggal Pengujian</label>
               <div className="sheet-date-container">
@@ -870,7 +948,7 @@ useEffect(() => {
               </div>
             </div>
             <div className="form-nav step3">
-              <button className="btn-back" onClick={() => setStep(3)}>Kembali</button>
+              <button className="btn-back" onClick={() => setStep(2)}>Kembali</button>
               <button className={`btn-next sheet-btn-save ${(!selectedDate || selectedSlots.length !== getRequiredSlots()) ? 'sheet-btn-disabled' : 'sheet-btn-active'}`} onClick={saveSample} disabled={!selectedDate || selectedSlots.length !== getRequiredSlots()}>Simpan Sampel</button>
             </div>
           </>
